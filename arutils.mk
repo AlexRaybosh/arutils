@@ -92,15 +92,17 @@ native-build: java-compile
 	@$(MAKE) -C $(ROOT)/src_native ROOT=$(ROOT) JAVA_BUILD=$(JAVA_BUILD) SRC_NATIVE=$(SRC_NATIVE) NATIVE_JAVA_UTILS_SO_VERSION=$(NATIVE_JAVA_UTILS_SO_VERSION)
  
  
-JAR_TS=$(shell test -f $(ROOT)/target/arutils.jar && stat -c %Y $(ROOT)/target/arutils.jar || echo 0 )
+JAR_TS:=$(shell test -f $(ROOT)/target/arutils.jar && stat -c %Y $(ROOT)/target/arutils.jar || echo 0 )
 $(info JAR_TS $(JAR_TS))
 
+
+VERSION:=1.0.0
 
 zip:  copy-resources
 	rm -rf $(ROOT)/target
 	mkdir -p $(ROOT)/target
-	sh -c "cd $(SRC_JAVA) && zip -qr $(ROOT)/target/arutils-sources.jar . " ; \
-	sh -c "cd $(JAVA_BUILD) && zip -qr $(ROOT)/target/arutils.jar . "
+	sh -c "cd $(SRC_JAVA) && zip -qr $(ROOT)/target/arutils-sources-$(VERSION)-jar . " ; \
+	sh -c "cd $(JAVA_BUILD) && zip -qr $(ROOT)/target/arutils-$(VERSION).jar . "
  	
 clean:
 	rm -rf $(ROOT)/javalibssrc $(ROOT)/javalibs $(ROOT)/java_build $(ROOT)/java_list $(ROOT)/native_build $(ROOT)/target
