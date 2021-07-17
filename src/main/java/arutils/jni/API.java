@@ -1,9 +1,6 @@
 package arutils.jni;
 
-import java.lang.reflect.Field;
-
 import arutils.util.Utils;
-import sun.misc.Unsafe;
 
 
 @SuppressWarnings("static-access")

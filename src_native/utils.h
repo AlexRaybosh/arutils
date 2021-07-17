@@ -62,5 +62,18 @@ inline void GoodSpinLock::unlock() restrict {
 
 */
 
+#include <jni.h>
+#include <string>
+#include <vector>
+
+void errno_exception(const std::string & msg);
+void errno_string(std::string & str);
+void errno_exception(const std::string & msg);
+std::string jstringToString(JNIEnv* env, jstring jstr);
+std::vector<std::string> jstringsToStrings(JNIEnv* env, jobjectArray jstrArray);
+jint throwNoClassDefError(JNIEnv* env, const char* msg);
+jint throwNoNoSuchMethodError(JNIEnv* env, const char* className, const char* methodName, const char* sig);
+jint throwOutOfMemoryError(JNIEnv* env, const char* msg);
+jint throwException(JNIEnv* env, const char* className, const char* msg);
 
 #endif /* UTILS_HH_ */

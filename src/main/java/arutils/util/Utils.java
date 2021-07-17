@@ -711,7 +711,7 @@ public final class Utils {
 				Field logger=cls.getDeclaredField("logger");
 				u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
 			} catch (Throwable e) {
-				System.err.println("Failed to disable unsafe logger: " + e.getMessage());
+				//System.err.println("Failed to disable unsafe logger: " + e.getMessage());
 			}
 			return u;
 		} catch (Throwable e) {
@@ -853,23 +853,29 @@ public final class Utils {
 	}
 
 	public static String getCanonicalHostName() {
-		return processHolder.cannonicalHostName;
+		return getProcessHolder().cannonicalHostName;
 	}
 	public static Long getPid() {
-		return processHolder.pid;
+		return getProcessHolder().pid;
 	}
 	public static String getProcessCmdLine() {
-		return processHolder.cmdLine;
+		return getProcessHolder().cmdLine;
 	}
 	public static String[] getProcessCmd() {
-		return processHolder.args.toArray(new String[processHolder.args.size()]);
+		return getProcessHolder().args.toArray(new String[getProcessHolder().args.size()]);
 	}
 	public static Long getProcessStartTime() {
-		return processHolder.startTime;
+		return getProcessHolder().startTime;
 	}
 	
+	private static ProcessInfoHolder getProcessHolder() {
+		return Lazy.processHolder;
+				
+	}
+	static class Lazy {
+		final static ProcessInfoHolder processHolder=initProcessHolder();	
+	}
 	
-	final static ProcessInfoHolder processHolder=initProcessHolder();
 	static class ProcessInfoHolder {
 		final String cannonicalHostName;
 		final Long pid;
@@ -972,5 +978,18 @@ public final class Utils {
 		throw new RuntimeException(t);
 	}
 
+	static String getFrame(int level) {
+		try {
+			if (1==1) throw new RuntimeException();
+		} catch (RuntimeException e) {
+			try {
+				return e.getStackTrace()[level].toString();
+			} catch (Exception ex) {}
+		}
+		return "";
+	}
+	public static String getCodeMarker() {
+		return getFrame(2);
+	}
 	
 }

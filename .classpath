@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-11-openjdk-amd64">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="javalibs/commons-codec.jar"/>
-	<classpathentry kind="lib" path="javalibs/gson.jar"/>
+	<classpathentry kind="lib" path="javalibs/gson.jar" sourcepath="javalibssrc/gson-src.jar"/>
 	<classpathentry kind="lib" path="javalibs/mysql-connector-java.jar"/>
 	<classpathentry kind="lib" path="javalibs/postgresql.jar"/>
-	<classpathentry kind="output" path="java_build"/>
+	<classpathentry kind="output" path="classes"/>
 </classpath>

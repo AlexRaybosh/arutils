@@ -5,3 +5,4 @@ native_build/*
 target/*
 prebuild/*
 .git*
+classes/*

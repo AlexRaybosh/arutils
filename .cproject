@@ -18,4 +18,5 @@
 		<pathentry kind="src" path=""/>
 		<pathentry kind="out" path=""/>
 	</storageModule>
+	<storageModule moduleId="refreshScope"/>
 </cproject>

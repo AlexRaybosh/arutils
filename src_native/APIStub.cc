@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdexcept>
 #include "utils.h"
 
 
@@ -126,3 +128,34 @@ JNIEXPORT void JNICALL Java_arutils_jni_APIStub_unlock_1dummy(JNIEnv * e, jclass
 JNIEXPORT void JNICALL Java_arutils_jni_APIStub_unlock_1lock_1release(JNIEnv * e, jclass c, jlong a) {
 	__sync_lock_release(reinterpret_cast<int*>(a));
 }
+
+
+
+
+
+const char* JAVA_BIN;
+
+struct LOCAL_INIT {
+	LOCAL_INIT() {
+		char buf[4096];
+		auto s=readlink("/proc/self/exe",buf,sizeof(buf));
+		if (s<=0) {
+			JAVA_BIN=(const char*)::malloc(5);
+			::memcpy((void*)JAVA_BIN,"java",5);
+		} else {
+			JAVA_BIN=(const char*)::malloc(s+1);
+			((char*)JAVA_BIN)[s]=0x0;
+			::memcpy((void*)JAVA_BIN,buf,s);
+			//printf("java is %s\n",JAVA_BIN);
+		}
+	}
+	~LOCAL_INIT() {
+		::free((void*)JAVA_BIN);
+	}
+};
+static LOCAL_INIT _local_init;
+
+
+
+
+

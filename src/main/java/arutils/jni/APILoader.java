@@ -48,6 +48,7 @@ import java.util.Properties;
 import javax.management.RuntimeErrorException;
 
 import arutils.util.Utils;
+import sun.misc.Unsafe;
 
 /**
  * <b>Internal only - Do not use this class.</b> This class loads a native
@@ -93,6 +94,10 @@ import arutils.util.Utils;
  */
 public class APILoader {
 
+	private final static Unsafe unsafe;
+	static {
+		unsafe=Utils.getUnsafe();
+	}
     private final static File TMP_DIR=initTmpDir();
     private static File initTmpDir() {
     	String t=System.getProperty("java.io.tmpdir");

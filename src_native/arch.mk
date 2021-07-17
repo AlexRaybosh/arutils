@@ -38,16 +38,13 @@ else ifeq "$(ARCH)" "AIX-powerpc-32"
 	ARCH_INCLUDE:=$(CURDIR)/jni_include/aix
 endif
 
-#COMMON_CXXFLAGS:=-fvisibility=hidden -fvisibility-inlines-hidden -D_REENTRANT
-
 COMMON_CXXFLAGS:=-fvisibility=hidden -fvisibility-inlines-hidden -D_REENTRANT \
 	-D_POSIX_C_SOURCE=202001L -D_XOPEN_SOURCE=600 -fpic -pthread \
 	-I$(ARCH_INCLUDE) \
 	-std=gnu++11 \
 	-O2 -g
 
-CXXFLAGS:=$(CXXFLAGS) $(COMMON_CXXFLAGS)
-
+CXXFLAGS:=$(CXXFLAGS) $(COMMON_CXXFLAGS) -Wno-unused-result
 JNI_BUILD:=$(NATIVE_BUILD)/$(ARCH)
 
 $(shell mkdir -p $(JNI_BUILD))

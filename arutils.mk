@@ -85,7 +85,8 @@ copy-resources : java-compile native-build
 	@mkdir -p $(JAVA_BUILD)/so
 	@cp -a $(ROOT)/prebuild/* $(JAVA_BUILD)/so
 	@cp $(SRC_JAVA)/arutils/jni/NATIVE_JAVA_UTILS_SO_VERSION $(JAVA_BUILD)/arutils/jni
- 
+	@mkdir -p $(ROOT)/classes
+	sh -c "cd $(JAVA_BUILD) && tar -cf - . " | sh -c "cd $(ROOT)/classes && tar -xf -"
  
 #
 native-build: java-compile 
