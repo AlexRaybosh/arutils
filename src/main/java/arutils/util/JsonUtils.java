@@ -1,7 +1,9 @@
 package arutils.util;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -14,6 +16,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
+
+import arutils.util.JsonUtils.JsonType;
 
 public class JsonUtils {
 
@@ -104,17 +108,35 @@ public class JsonUtils {
 
 
 
-	
 	public static JsonElement parseJsonElement(String str) {
+		return parseJsonElement(str, true);
+	}
+	
+	public static JsonElement parseJsonElement(String str, boolean lenient) {
 		if (str==null) return null;
 		JsonReader rd=new JsonReader(new StringReader(str));
-		rd.setLenient(true);
+		rd.setLenient(lenient);
 		return JsonParser.parseReader(rd);
 	}
-	public static JsonObject parseJsonObject(String str) {
-		JsonElement e = parseJsonElement(str);
-		return e==null?null:e.getAsJsonObject();
+	
+	public static JsonObject parseJsonObject(String data, boolean lenient) {
+		JsonElement e = parseJsonElement(data, lenient);
+		if (lenient) {
+			if (e==null || !e.isJsonObject()) return new JsonObject();
+			return e.getAsJsonObject();
+		} else {
+			if (e==null || !e.isJsonObject()) return null;
+			return e.getAsJsonObject();	
+		}
 	}
+	public static JsonObject parseJsonObject(String str) {
+		return parseJsonObject(str, true);
+	}
+	public static JsonObject parseJsonObject(InputStream is) {
+		JsonElement e = JsonParser.parseReader(new java.io.InputStreamReader(is));
+		return e==null || !e.isJsonObject()?null:e.getAsJsonObject();
+	}
+	
 	
 	public static JsonObject getJsonObject(JsonElement obj,String...path) {
 		if (obj==null) return null;
@@ -140,9 +162,18 @@ public class JsonUtils {
 		}
 		return curr.get(path[last]);
 	}
+	public static long getLong(long fallback,JsonElement obj,String... path) {
+		Long ret=getLong(obj,path);
+		return ret==null?fallback:ret;
+	}
+		
 	public static Long getLong(JsonElement obj,String... path) {
 		Number n=getNumber(obj, path);
 		return n==null?null:n.longValue();
+	}
+	public static int getInteger(int fallback, JsonElement obj,String... path) {
+		Integer ret=getInteger(obj, path);
+		return ret==null?fallback:ret;
 	}
 	public static Integer getInteger(JsonElement obj,String... path) {
 		Number n=getNumber(obj, path);
@@ -231,7 +262,7 @@ public class JsonUtils {
 		return arr.getAsJsonArray().iterator();
 	}
 	
-	private static Iterable<JsonElement> emptyIterable=new Iterable<JsonElement>() {
+	private final static Iterable<JsonElement> emptyIterable=new Iterable<JsonElement>() {
 		public Iterator<JsonElement> iterator() {return emptyIterator;}
 	};
 	
@@ -263,11 +294,65 @@ public class JsonUtils {
 		return ret;
 	}
 	
+	
+	public static JsonObject combine(JsonElement... objs) {
+		if (objs.length==0) return null;
+		int startPos=-1;
+		for (int i=0;i < objs.length; ++i) {
+			JsonElement c=objs[i];
+			if (c!=null && c.isJsonObject()) {
+				startPos=i;
+				break;
+			}
+		}
+		if (startPos==-1) return null;
+		JsonObject start=objs[startPos].getAsJsonObject();
+		JsonElement ret=start.deepCopy();
+		for (int i=startPos+1;i< objs.length; ++i) {
+			JsonElement c=objs[i];
+			if (c==null || !c.isJsonObject()) continue;
+			ret=combineTwo(ret,c);
+		}
+		return ret.getAsJsonObject();
+		
+	}
+	private static JsonElement combineTwo(JsonElement oe, JsonElement ne) {
+		JsonType ot = JsonUtils.getType(oe);
+		JsonType nt = JsonUtils.getType(ne);
+		if (ot==JsonType.OBJECT && nt==JsonType.OBJECT) {
+			JsonObject oObj=oe.getAsJsonObject();
+			JsonObject nObj=ne.getAsJsonObject();
+			
+			JsonObject ret=oObj.deepCopy();
+			Set<String> intersect=new HashSet<>(oObj.keySet());
+			intersect.retainAll(nObj.keySet());
+			Set<String> nk=new HashSet<>(nObj.keySet());
+			nk.removeAll(intersect);
+			
+			for (String p : nk) {
+				ret.add(p, nObj.get(p).deepCopy());
+			}
+			for (String p : intersect) {
+				JsonElement oc = oObj.get(p);
+				JsonElement nc = nObj.get(p);
+				JsonElement cc=combineTwo(oc,nc);
+				ret.add(p, cc);
+			}
+			return ret;
+		} else {
+			return ne.deepCopy();	
+		}
+	}
+	
 	public static void main(String[] args) {
 		JsonElement e = JsonUtils.parseJsonElement("{\"c\":1, \"a\":2}");
 		System.out.println(prettyPrint(e));
 		System.out.println(prettyPrint(sortJsonObject(e)));
 	}
+
+	
+
+
 
 
 

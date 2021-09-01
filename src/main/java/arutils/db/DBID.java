@@ -90,14 +90,7 @@ public class DBID {
 		
 		
 		DELETE_SQL="delete from "+table+" where name=?";
-		
-		
-		if (db.getDialect()==Dialect.POSTGRESS)
-			INSERT_SQL="insert into "+table+" (name,value,mod_utc_ts) values (?,?,(current_timestamp at time zone 'UTC'))";
-		else
-			INSERT_SQL="insert into "+table+" (name,value,mod_utc_ts) values (?,?,"+db.getIntrinsics().getUTCTimestampFunction()+")";
-		
-		
+		INSERT_SQL="insert into "+table+" (name,value,last_ms) values (?,?,?)";
 		
 		checkCreateTable();
 	}
@@ -111,22 +104,12 @@ public class DBID {
 				} catch (SQLException ex) {
 					if (Thread.interrupted()) throw new InterruptedException();
 					String createSql="CREATE TABLE "+table+ "(name varchar(200) not null,"
-							+ "value "+db.getIntrinsics().getLongSequenceTypeName()+" NOT NULL, "+getTsFieldString()+", primary key (name) )";
+							+ "value "+db.getIntrinsics().getLongSequenceTypeName()+" NOT NULL, last_ms "+db.getIntrinsics().getLongSequenceTypeName()+", primary key (name) )";
 					cw.update(createSql, false);
 				}
 				return null;
 			}
 		});
-	}
-	private String getTsFieldString() {
-		switch (db.getDialect()) {
-		case ORACLE:
-			return "mod_utc_ts TIMESTAMP(0) NOT NULL";
-		case TDS:
-			return "mod_utc_ts DATETIME NOT NULL";			
-		default:
-			return "mod_utc_ts TIMESTAMP NOT NULL";
-		}
 	}
 
 	
@@ -145,7 +128,7 @@ public class DBID {
 				a.from=current==null?1:current.longValue();
 				a.to=(current==null)?2:current.longValue()+distance;
 				a.start=a.from;
-				cw.update(INSERT_SQL, true, key ,a.to);
+				cw.update(INSERT_SQL, true, key ,a.to,System.currentTimeMillis());
 				return a;	
 			}
 			public boolean onError(ConnectionWrap cw, boolean willAttemptToRetry, SQLException ex, long start, long now) throws SQLException, InterruptedException {
@@ -159,10 +142,10 @@ public class DBID {
 	
 	public static void main (String[] args) throws Exception {
 		//DB db=DB.create("jdbc:mysql://192.168.1.2:6666/?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true", "business", "business");
-		DB db=DB.create("jdbc:mysql://localhost:3306/?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true", "business", "business");
+		DB db=DB.create("jdbc:mysql://localhost:3306/test1?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true", "test1", "");
 		//DB db=DB.create("jdbc:oracle:thin:@(DESCRIPTION=(sdu=32000)(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.2)(PORT=1521))(CONNECT_DATA=(SID=orcl)(SERVER=DEDICATED)))", "business", "business");
 //		DB db=DB.create("jdbc:oracle:thin:@(DESCRIPTION=(sdu=32000)(ADDRESS=(PROTOCOL=TCP)(HOST=dummy.google.com)(PORT=1521))(CONNECT_DATA=(SID=orcl)(SERVER=DEDICATED)))", "business", "business");
-		DBID idgen=new DBID(db,"conf.seq");
+		DBID idgen=new DBID(db,"seq");
 		System.out.println(idgen.next("alex"));
 	}
 }

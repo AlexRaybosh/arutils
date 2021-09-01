@@ -188,7 +188,7 @@ public final class Utils {
 			}
 			return bos.toByteArray();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new RuntimeException(e.getMessage(), e);
 		} finally {
 			close(is);
 		}
@@ -727,8 +727,7 @@ public final class Utils {
 	public static String getArchName() {
 		return getUname()+"-"+getProcessorName()+"-"+(8*getAddressSize());
 	}
-	
-	public static void rethrowCause(Throwable e) throws Exception {
+	public static <T> T rethrowCause(Throwable e) throws Exception {
 		if (e instanceof InterruptedException) throw (InterruptedException)e;
 		Throwable current=e;
 		InterruptedException lastInterrupted=null;
