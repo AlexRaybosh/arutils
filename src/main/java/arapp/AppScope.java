@@ -230,7 +230,6 @@ public class AppScope {
 					String callerName=InitSubSystems.getSubInitThreadSubName();
 					Map<String, Set<String>> subDep = InitSubSystems.getSubInitThreadDependency();
 					Set<String> callerDeps=subDep.get(callerName);
-					Set<String> myDeps=subDep.get(name);
 					if (name.equals(callerName)) {
 						throw new RuntimeException("Subsystem \""+name+ "\" initialization deadlock: waiting on itself to initialize");	
 					}
