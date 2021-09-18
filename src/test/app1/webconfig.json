@@ -1,0 +1,108 @@
+{
+	
+	"mappings" : {
+		"api" : {
+			"endpoints" : {
+				"/json": {
+					"description" : "here 'buildin' indicates a hardcoded handler, 'jsonApiPath' - java package path to json cong/handlers ",
+					"buildin": "json",
+					"jsonApiPath" : "testapis/json",
+					"bulk": 1,
+					"parallel": 4,
+					"queueDepth": 1000,
+					"timeoutMs": 300000,
+					"protectionConfig": { "tokens" : ["INTERNAL_DOMAIN"] }
+				},
+				"/test": {
+					"class": "testapis.webapi.TestHandler",
+					"bulk": 1,
+					"parallel": 4,
+					"queueDepth": 1000,
+					"timeoutMs": 300000,
+					"protectionConfig": { "tokens" : ["TEST_DOMAIN"] }
+				},
+				"/upload" : {
+					"buildin": "multipart",
+					"bulk": 1,
+					"parallel": 4,
+					"queueDepth": 1000,
+					"timeoutMs": 300000,
+					"protectionConfig": { "tokens" : ["INTERNAL_DOMAIN"] }
+				}
+			}
+		},
+		"api-debug" : {
+			"endpoints" : {
+				"/json": {
+					"buildin": "json",
+					"jsonApiPath" : "testapis/json",
+					"bulk": 1,
+					"parallel": 1,
+					"queueDepth": 1,
+					"timeoutMs": 1,
+					"protectionConfig": { "tokens" : ["INTERNAL_DOMAIN"] }
+				},
+				"/test": {
+					"class": "testapis.webapi.TestHandler",
+					"bulk": 1,
+					"parallel": 1,
+					"queueDepth": 1,
+					"timeoutMs": 1,
+					"protectionConfig": { "tokens" : ["INTERNAL_DOMAIN"] }
+				}
+			}
+		}
+	},
+	
+	"session" : {
+		"keyName" : "arweb_token",
+		"class" : "arweb.web.DummySessionProvider"
+	},
+
+	"defaultEndpointProtectionConfig": { 
+		"tokens" : [], 
+		"maxRequestSize" : 8192 
+	},
+
+	"protectionDomains" : {
+		"localhost" : {
+			"http" :{
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"],
+				"maxRequestSize" : 65535
+			},
+			"https": {
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"],
+				"maxRequestSize" : 65535
+			}
+		},
+		"127.0.0.1" : {
+			"http" :{
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"],
+				"maxRequestSize" : 65535
+			},
+			"https": {
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"]
+			}
+		},
+		"::1" : {
+			"http" :{
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"]
+			},
+			"https": {
+				"tokens" : ["ADMIN_DOMAIN",	"INTERNAL_DOMAIN", "EXTERNAL_HTTP", "EXTERNAL_HTTPS"]				
+			}
+		},
+		"" : {
+			"http" :{
+				"tokens" : ["TEST_DOMAIN"],
+				"maxRequestSize" : 8192
+			},
+			"https": {
+				"tokens" : ["TEST_DOMAIN"],
+				"maxRequestSize" : 8192
+			}		
+		}
+	}
+	
+	
+}

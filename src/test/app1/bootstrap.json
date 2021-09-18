@@ -1,0 +1,68 @@
+{
+	"include" : ["db","allincludes"],
+	
+	"env" : {
+		"localdev2" : {
+		},
+		"dev" : {		
+		}
+	},
+
+	"bootstrap" : {
+		"shell" : "/bin/bash",
+		"abortOnError" : false,
+		"abortOnErrorIfShellEval" : "[[ \"$APP_ENV\" == \"prod\" || \"$APP_ENV\" == \"beta\" ]] || { echo non production environment $APP_ENV detected>&2; exit 1; }",
+		"overrideEnvFromEnvironmentVariable" : "APP_ENV",
+		"logErrors" : true,
+		"disableDatabaseEnvironmentVariable" : "DISABLE_DB",
+		"entries" : [
+			{
+				"propertiesEntryType" : "SHELL_EVAL",
+				"shellArgument" : "${PROPERTIES_PROVIDER}"		
+			},
+			{
+				"propertiesEntryType" : "SHELL_EVAL",
+				"shellArgument" : "${HOME}/${APP_ENV}/test_props_provider.sh",
+				"abortOnExecutionError" : true			
+			},		
+			{
+				"propertiesEntryType" : "FILE_EXEC",
+				"file" : "./src/main/java/test_props_provider.sh",
+				"args" : ["skip", "me"],
+				"abortOnFileMissing" : false,
+				"abortOnFileNotExecutable" : false,
+				"abortOnExecutionError" : true
+			},						
+			{
+				"propertiesEntryType" : "FILE",
+				"file" : "./src/main/java/test_props_provider.properties",
+				"abortOnLoadError" : true,
+				"abortOnFileMissing" : false
+			},			
+			{
+				"propertiesEntryType" : "BUILDIN",
+				"properties" : {
+					"dburl"	:	"jdbc:mysql://localhost:3306/test1?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true&useSSL=false",
+					"dbuser":	"test1",
+					"dbpassword" : "",
+					"aesIvBase64" : "VNbq2k8wbY5jObArjvoHRA==",
+					"aesKeyBase64" : "zXEhEwR4BuU1QPAlJuLUEFSPH9UIJtzWYOBlTT1fWpU=",
+					"rsaPrivatePKCS8Base64" : "MIIEpAIBAAKCAQEAxLyz7h7afGk/3I/GUdfe+CzWVFiDXxQddEHz0vDDy2Y4aelR8cqwF1+DLD4H98EyWgMSBTorpcDCm1spd206HZt5pVeo38MXsugthENGwoqHVVUi0g+Gp1MbwpbUx2cxw/xvMoFp0b2kfGB/rP/TYLKXn+DuFVHJ8NW4AIDRXySqaCDwyuwft/iLjpb8JPNm5lZcF8gL7UefUO/IlhPO+PeE3qvfeGAEw7wwnpyS6nV7JD10e4Yln5pvqsx5ewJn4bLwdSftOwut2+e0glx59e8zO3ehRgs1MuHzq5wbrBULcaWdVmF3F4JLfoht3Vfcu5Rr3t956qaKlomfM65ASwIDAQABAoIBAH+Me/cAh9QrBF1B1WjQVN1/bEFo1Vs6FlJ+Q87Zi4b+McrwmtDxALNWmBuB5/aHidZzsSY0bYHb9A92ze6AoTH6z6YTrAfOWzoBbykV2PVdjJoVRSr9J+apahEBatgQnmIa8hjDcFCr6807XutRPMCvaMAdux2VViBO3ylsWtGcNonnVxgs0hI1H+oO2+gHnCCOK4ot1OrEhwefDkVXcg4AMMBpHBzXxM1u82KPSAKonp6yAUCWwuRSNBqx+L2AEqoxFNblQ6tMvcg1ZZ0lM038onYMQhhnR0tOkPrwpTsRZd1VUgM4RgluzTCbS3fsbqDYub26WPYeE2tz520uUbECgYEA9xgaVWZDc8cqAQmDy2uCfcJaD9ZZcADLOysxFsRWBqFsQS/0vGwSVcC1AJpvbvghJgviNRrRrG1tLl/yh/PSDJqeP6fRhqNp2QM29hUPoYrCUitB/SWcZnGBMbswFDydaFBa8g8WLNVpriTW+7QMTLrme3KApWAsFEy4Sc/rE5kCgYEAy9P2xF3hk75kybpZpFQT78XwKatjFR7v9CDKsPMFBVZX8bUgfQuLhXGKr6w9/sQhmwIk6ePlKlCmrp/Ph4zJjjTFqMt+QmPi3yx68N2ghORHq4a7EmZgN3lTI57w4Zfzv5mnXOtAzIEZ+oUWxPgEPX5P/g+3UQpifz6VwhmQoYMCgYEAo4lpTGI9fHAxpbQVbVm/aNpr3xV/5jgwSf3hJG9XfFX0HwTNVrO0QtsjML4FyI0i61psIbeZVCSsYUgRbdd6iur+l6TLcO/Qy1dsVdxElycOS3Hj39a3t7mhxzdbr9kaWQLt3k0L4SpyIlaxjq9wgIwmpUd4S3vmUJ0iT3/z1ukCgYEAsZze53Y3XxsFkJOGEaACT2nYQTdLe9gdmEoK1e6ubVwz/jerO8uXpIywISyiSSJ3di+EIxunUhw9YuV3XdLcv8JUiyXnu8p2o6qK5uD5Q1P48ArTcNEs/qoGPH//v1U93bPzFxEYwhutm5Plp3XHnB45blYbk87Mzbynmx/T3CkCgYB4EiEtFTd2QGj0rB7YrspyeKA0Nn4Khke/I8GH3sYWA4bL7xr+bF1z1fdUy9aAt/UmD6o/uykNp5sj329wd+32LNdGC7iKGcGMjGSkfcAUlZYY2Ru+Hew36PYqsPBmSPqxLCsbpKY0hh/f3mBBQuLfz2lUX3JDuV59jRsp5c9S5Q==",
+					"#rsaPublicPKCS8Base64" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxLyz7h7afGk/3I/GUdfe+CzWVFiDXxQddEHz0vDDy2Y4aelR8cqwF1+DLD4H98EyWgMSBTorpcDCm1spd206HZt5pVeo38MXsugthENGwoqHVVUi0g+Gp1MbwpbUx2cxw/xvMoFp0b2kfGB/rP/TYLKXn+DuFVHJ8NW4AIDRXySqaCDwyuwft/iLjpb8JPNm5lZcF8gL7UefUO/IlhPO+PeE3qvfeGAEw7wwnpyS6nV7JD10e4Yln5pvqsx5ewJn4bLwdSftOwut2+e0glx59e8zO3ehRgs1MuHzq5wbrBULcaWdVmF3F4JLfoht3Vfcu5Rr3t956qaKlomfM65ASwIDAQAB",					
+					"debug" : "true",
+					"env" : "localdev1",
+					"logdbpassword" : "test2"
+				}
+			}
+		]
+	},
+
+	
+	"defaults" : {
+		"subsystems" : {
+			"initConcurrency" : 1,
+			"entries" : {
+			}
+		}
+	}
+}

@@ -21,10 +21,13 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Security;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -42,6 +45,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import arutils.async.AsyncEngine;
 import sun.misc.Unsafe;
 
@@ -55,11 +60,12 @@ public final class Utils {
 			try {
 				c.close();
 			} catch (Throwable ex) {
+				if (ex instanceof InterruptedException) Thread.currentThread().interrupt();
 			}
 	}
 
 	public static boolean isEmpty(String st) {
-		return st == null || st.trim().length() == 0;
+		return st == null || trimmedLength(st) == 0;
 	}
 
 	public static String getProperty(Properties props, String propertyName, String defaultValue) {
@@ -207,7 +213,7 @@ public final class Utils {
 			return null;
 		if (obj instanceof Number)
 			return ((Number) obj).longValue();
-		return new Long(obj.toString());
+		return Long.valueOf(obj.toString());
 	}
 
 	public static Boolean toBoolean(Object obj) {
@@ -254,41 +260,7 @@ public final class Utils {
 		return null;
 	}
 
-	/*
-	 * args: Long age, boolean olderThanAge=true
-	 */
-	public static Map<String, Long> dirListAgeMap(File dir, String regExpr, Object... args) {
-		Long age = null;
-		Boolean olderThanAge = true;
-		if (args != null) {
-			if (args.length > 0)
-				age = toLong(args[0]);
-			if (args.length > 1)
-				olderThanAge = toBoolean(args[1]);
-		}
-		String[] list = dir.list();
-		Map<String, Long> ret = new HashMap<String, Long>();
-		if (list == null)
-			return ret;
-		for (String name : dir.list()) {
-			if (name == null)
-				continue;
-			if (regExpr == null || name.matches(regExpr)) {
-				long lst = new File(dir, name).lastModified();
-				long a = System.currentTimeMillis() - lst;
 
-				if (age == null) {
-					ret.put(name, lst);
-					continue;
-				}
-				if (olderThanAge && a >= age)
-					ret.put(name, lst);
-				if (!olderThanAge && a <= age)
-					ret.put(name, lst);
-			}
-		}
-		return ret;
-	}
 
 	public static boolean in(String str, String... list) {
 		if (list == null)
@@ -503,25 +475,7 @@ public final class Utils {
 		return o1.compareTo(o2);
 	}
 
-	/*
-	 * public static void main(String[] strs) {
-	 * logerr("Starting:\n%s",getStackTrace(new RuntimeException())); for
-	 * (Map.Entry<String,Long> name : dirListAgeMap(new
-	 * File("/home/alex/test_group"),"^\\d+$",60*1000).entrySet()) {
-	 * System.out.println(name.getKey()+" " +utcDateTimeString(name.getValue())); }
-	 * }
-	 * 
-	 */
 
-	public static String boolchar(boolean b) {
-		return b ? "Y" : "N";
-	}
-
-	public static boolean boolchar(String str) {
-		if ("Y".equals(str))
-			return true;
-		return false;
-	}
 
 	private final static ThreadLocal<Local> locals = new ThreadLocal<Local>() {
 		@Override
@@ -537,6 +491,9 @@ public final class Utils {
 	public static byte[] sha256(byte[] payload) {
 		return getLocal().sha256(payload);
 	}
+	public static byte[] sha256(byte[] payload, int off, int len) {
+		return getLocal().sha256(payload, off, len);
+	}	
 
 	public static String md5HexLow(byte[] payload) {
 		return getLocal().md5HexLow(payload);
@@ -545,7 +502,17 @@ public final class Utils {
 	public static String sha256HexLow(byte[] payload) {
 		return getLocal().sha256HexLow(payload);
 	}
-
+	public static byte[] hmacSHA256(byte[] secret, byte[] value, int off, int len) {
+		return getLocal().hmacSHA256(secret, value, off, len);
+	}
+	public final byte[] hmacSHA256(byte[] secret, byte[] value) {
+		return getLocal().hmacSHA256(secret, value, 0, value.length);
+	}
+	public final byte[] hmacSHA256(String secret, byte[] value) {
+		return getLocal().hmacSHA256(secret.getBytes(StandardCharsets.UTF_8), value, 0, value.length);
+	}
+	
+	
 	public static Local getLocal() {
 		return locals.get();
 	}
@@ -758,6 +725,15 @@ public final class Utils {
 	}	
 	
 	
+	public static Exception swallowInterrupted(Throwable e) {
+		try {
+			return proceedUnlessInterrupted(e);
+		} catch (InterruptedException  ex) {
+			Thread.currentThread().interrupt();
+			return null;
+		}
+	}
+	
 	public static Exception proceedUnlessInterrupted(Throwable e) throws InterruptedException {
 		if (e instanceof InterruptedException) throw (InterruptedException)e;
 		Throwable current=e;
@@ -963,16 +939,19 @@ public final class Utils {
 		return null;
 	}
 
-	public static void main(String[] args) throws Exception {
-		System.out.println(getArchName());
-		System.out.println(getCanonicalHostName());
-		System.out.println(getProcessCmdLine());
-		System.out.println(getPid());
-		
-	}
 
-	public static <R> R rethrowRuntimeException(Throwable t) {
+	public static <R> R rethrowRuntimeException(String msg, Throwable t) {
+		if (t instanceof InterruptedException) Thread.currentThread().interrupt();
 		Exception c = extraceCause(t);
+		if (c instanceof InterruptedException) Thread.currentThread().interrupt();
+		if (c instanceof RuntimeException) throw (RuntimeException)c;
+		if (msg!=null) throw new RuntimeException(msg, t);
+		else throw new RuntimeException(t);
+	}
+	public static <R> R rethrowRuntimeException(Throwable t) {
+		if (t instanceof InterruptedException) Thread.currentThread().interrupt();
+		Exception c = extraceCause(t);
+		if (c instanceof InterruptedException) Thread.currentThread().interrupt();
 		if (c instanceof RuntimeException) throw (RuntimeException)c;
 		throw new RuntimeException(t);
 	}
@@ -987,8 +966,124 @@ public final class Utils {
 		}
 		return "";
 	}
+	public static List<String> getErrorFrames() {
+		LinkedList<String> lst=new LinkedList<String>();
+		try {
+			if (1==1) throw new RuntimeException();
+		} catch (RuntimeException e) {
+			
+			try {
+				 StackTraceElement[] frames = e.getStackTrace();
+				 if (frames!=null && frames.length>0) {
+					 for (int i=1; i<frames.length;++i) {
+						 lst.add(frames[i].toString());
+					 }
+					 return lst;
+				 }
+				 lst.add("Failed to derive stack trace, frames: "+frames);
+			} catch (Exception ex) {
+				lst.add("Unexpected error deriving stack trace: "+Utils.getStackTrace(ex));
+			}
+		}
+		return lst;
+	}
+	
 	public static String getCodeMarker() {
 		return getFrame(2);
+	}
+
+	public static String trim(String msg) {
+		if (msg==null) return null;
+		if (msg.length()==0) return "";
+		int start=0;
+		for (int to=msg.length();start<to;) {
+			char c=msg.charAt(start);
+			if (c == '\n' || c=='\r' || c==' ' || c=='\t') {
+				++start;
+				continue;
+			}
+			else break;
+		}
+		int end=msg.length()-1;
+		for (;end>0;) {
+			char c=msg.charAt(end);
+			if (c == '\n' || c=='\r' || c==' ' || c=='\t') {
+				--end;
+				continue;
+			}
+			else break;
+		}
+		if (start==0 && end==msg.length()-1) return msg; 
+		return msg.substring(start, end+1);
+	}
+	public static int trimmedLength(String msg) {
+		if (msg==null) return 0;
+		if (msg.length()==0) return 0;
+		int start=0;
+		for (int to=msg.length();start<to;) {
+			char c=msg.charAt(start);
+			if (c == '\n' || c=='\r' || c==' ' || c=='\t') {
+				++start;
+				continue;
+			}
+			else break;
+		}
+		int end=msg.length()-1;
+		for (;end>0;) {
+			char c=msg.charAt(end);
+			if (c == '\n' || c=='\r' || c==' ' || c=='\t') {
+				--end;
+				continue;
+			}
+			else break;
+		}
+		if (start==0 && end==msg.length()-1) 
+			return msg.length(); 
+		return end+1-start;
+	}
+	
+	public static boolean initBouncyCastle() {
+		synchronized (Utils.class) {
+			if (bcFailed) return false; 
+			if (!bcTried) try {
+				bcTried=true;
+				BouncyCastleProvider bouncyCastleProvider=new BouncyCastleProvider(); 
+				Security.addProvider(bouncyCastleProvider);
+			} catch (Throwable t) {
+				System.err.println("Failed to initialize BouncyCastleProvider: "+t.getMessage());
+				bcFailed=true;
+				return false;
+			}
+			return true;
+		}
+		
+	}
+	private static boolean bcTried=false, bcFailed=false;
+
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("("+trim("")+")");
+		System.out.println("("+trim("a")+")");
+		System.out.println("("+trim("a \t\n\r")+")");
+		System.out.println("("+trim("ab")+")");
+		System.out.println("("+trim("abc")+")");
+
+		System.out.println("("+trimmedLength("")+")");
+		System.out.println("("+trimmedLength("a")+")");
+		System.out.println("("+trimmedLength("a \t\n\r")+")");
+		System.out.println("("+trimmedLength("ab")+")");
+		System.out.println("("+trimmedLength("abc")+")");
+
+		
+		//System.out.println(trimmedLength(""));
+		//System.out.println(trimmedLength("a"));
+		System.out.println(trimmedLength(" a \t\n"));
+		System.out.println(trimmedLength(" an \t\n"));
+		System.out.println(getArchName());
+		System.out.println(getCanonicalHostName());
+		System.out.println(getProcessCmdLine());
+		System.out.println(getPid());
+		
 	}
 	
 }

@@ -147,7 +147,7 @@ public class JsonUtils {
 			if (next==null || !next.isJsonObject()) return null;
 			curr=next.getAsJsonObject();
 		}
-		return curr.getAsJsonObject();
+		return curr.isJsonObject()?curr.getAsJsonObject():null;
 	}
 	public static JsonElement getJsonElement(JsonElement obj,String... path) {
 		if (path.length==0) return obj;
@@ -162,7 +162,7 @@ public class JsonUtils {
 		}
 		return curr.get(path[last]);
 	}
-	public static long getLong(long fallback,JsonElement obj,String... path) {
+	public static Long getLong(Long fallback,JsonElement obj,String... path) {
 		Long ret=getLong(obj,path);
 		return ret==null?fallback:ret;
 	}
@@ -171,7 +171,7 @@ public class JsonUtils {
 		Number n=getNumber(obj, path);
 		return n==null?null:n.longValue();
 	}
-	public static int getInteger(int fallback, JsonElement obj,String... path) {
+	public static Integer getInteger(Integer fallback, JsonElement obj,String... path) {
 		Integer ret=getInteger(obj, path);
 		return ret==null?fallback:ret;
 	}
@@ -183,6 +183,10 @@ public class JsonUtils {
 		JsonElement e=getJsonElement(obj, path);
 		return e==null?null:e.getAsNumber();
 	}
+	public static String getString(String fallback, JsonElement obj,String... path) {
+		String ret=getString(obj,path);
+		return ret==null?fallback:ret;
+	}
 	public static String getString(JsonElement obj,String... path) {
 		JsonElement e=getJsonElement(obj, path);
 		return e==null?null:e.getAsString();
@@ -190,6 +194,10 @@ public class JsonUtils {
 	public static Boolean getBoolean(JsonElement obj,String... path) {
 		JsonElement e=getJsonElement(obj, path);
 		return e==null?null:e.getAsBoolean();
+	}
+	public static Boolean getBoolean(Boolean fallback, JsonElement obj,String... path) {
+		Boolean ret=getBoolean(obj,path);
+		return ret==null?fallback:ret;
 	}
 	public static boolean getBool(JsonElement obj,String... path) {
 		Boolean b=getBoolean(obj, path);

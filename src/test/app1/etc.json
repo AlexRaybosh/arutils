@@ -1,0 +1,22 @@
+{
+	
+	"env" : {
+		"localdev2" : {
+		
+		}
+	},
+
+	"defaults" : {
+		"etc" : {
+			"dictionary" : {
+				"word" : {
+					"maxWordLength" : 700,
+					"concurrency" : 2,
+					"queueSize" : 10000,
+					"bulkSize" : 256,
+					"cacheSize" : 2048
+				}
+			}
+		}
+	}
+}

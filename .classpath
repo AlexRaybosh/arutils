@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/test"/>
+	<classpathentry kind="src" path="src/test/app1"/>
+	<classpathentry kind="src" path="src/test/app2"/>
+	<classpathentry kind="src" path="src/test/tests"/>
+	<classpathentry kind="src" path="src/test/utils"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-11-openjdk-amd64">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="javalibs/commons-codec.jar"/>
-	<classpathentry kind="lib" path="javalibs/gson.jar" sourcepath="javalibssrc/gson-src.jar"/>
-	<classpathentry kind="lib" path="javalibs/mysql-connector-java.jar"/>
-	<classpathentry kind="lib" path="javalibs/postgresql.jar"/>
+	<classpathentry kind="lib" path="javalibs/bcprov-jdk15on-1.69.jar"/>
+	<classpathentry kind="lib" path="javalibs/commons-codec-1.15.jar"/>
+	<classpathentry kind="lib" path="javalibs/gson-2.8.7.jar"/>
+	<classpathentry kind="lib" path="javalibs/mysql-connector-java-5.1.49.jar"/>
+	<classpathentry kind="lib" path="javalibs/postgresql-42.2.23.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

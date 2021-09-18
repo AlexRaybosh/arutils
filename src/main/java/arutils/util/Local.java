@@ -19,9 +19,16 @@ package arutils.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.Security;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.apache.commons.codec.digest.MessageDigestAlgorithms;
 
 final public class Local {
 	SimpleDateFormat localDateFormat=new SimpleDateFormat("yyyy-MM-dd");
@@ -32,35 +39,85 @@ final public class Local {
 	SimpleDateFormat utcDateTimeFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	SimpleDateFormat utcDateFormat=new SimpleDateFormat("yyyy-MM-dd");
 	SimpleDateFormat utcDateIntFormat=new SimpleDateFormat("yyyyMMdd");
-	MessageDigest md5Digest, sha256Digest;
+	MessageDigest md5Digest;
+	MessageDigest sha256Digest;
+	Mac hmacSHA256;
+	
 	{
 		utcDateTimeFormat.setTimeZone(Utils.UTC);
 		utcDateFormat.setTimeZone(Utils.UTC);
 		utcDateTimeFormatWithMS.setTimeZone(Utils.UTC);
 		utcDateIntFormat.setTimeZone(Utils.UTC);
 		utcDateTimeFormatLog.setTimeZone(Utils.UTC);
-		
-		try {
-			md5Digest=MessageDigest.getInstance("MD5");
-			sha256Digest=MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
 	}
+	
 	final byte[] md5(byte[] payload) {
+		if (md5Digest==null) try {
+			md5Digest=MessageDigest.getInstance(MessageDigestAlgorithms.MD5);
+		} catch (NoSuchAlgorithmException e) {
+			if (Utils.initBouncyCastle()) try {
+				md5Digest=MessageDigest.getInstance(MessageDigestAlgorithms.MD5,"BC");
+			} catch (Exception ee) {
+				throw new RuntimeException(e);	
+			}
+		}
 		md5Digest.update(payload);
 		return md5Digest.digest();
 	}
-	final byte[] sha256(byte[] payload) {
-		sha256Digest.update(payload);
-		return sha256Digest.digest();
-	}
+
 	final String md5HexLow(byte[] payload) {
 		return EncodingUtils.getHexLow(md5(payload));
 	}
 	final String sha256HexLow(byte[] payload) {
+		if (payload==null) return null;
 		return EncodingUtils.getHexLow(sha256(payload));
 	}
+	final byte[] sha256(byte[] value) {
+		if (value==null) return null;
+		return sha256(value, 0, value.length );
+	}
+	final byte[] sha256(byte[] value, int off, int len) {
+		if (value==null) return null;
+		if (sha256Digest==null) try {
+			sha256Digest=MessageDigest.getInstance(MessageDigestAlgorithms.SHA_256);
+		} catch (NoSuchAlgorithmException e) {
+			if (Utils.initBouncyCastle()) try {
+				sha256Digest=MessageDigest.getInstance(MessageDigestAlgorithms.SHA_256, "BC");
+			} catch (Exception ee) {
+				throw new RuntimeException(e);	
+			}
+		}
+		try {
+			sha256Digest.update(value,off,len);
+			return sha256Digest.digest();
+		} catch (Exception e) {
+			return Utils.rethrowRuntimeException(e);
+		}
+	}
+	final byte[] hmacSHA256(byte[] secret, byte[] value) {
+		if (value==null) return null;		
+		return hmacSHA256(secret, value, 0, value.length);
+	}
+	final byte[] hmacSHA256(byte[] secret, byte[] value, int off, int len) {
+		if (value==null) return null;
+		if (hmacSHA256==null) try {
+			hmacSHA256=Mac.getInstance("HmacSHA256");
+		} catch (NoSuchAlgorithmException e) {
+			if (Utils.initBouncyCastle()) try {
+				hmacSHA256=Mac.getInstance("HmacSHA256","BC");
+			} catch (Exception ee) {
+				throw new RuntimeException(e);	
+			}
+		}		
+		try {
+			SecretKeySpec secretKeySpec=new SecretKeySpec(secret, "HmacSHA256");
+			hmacSHA256.init(secretKeySpec);
+			hmacSHA256.update(value, off, len);
+			return hmacSHA256.doFinal();
+		} catch (Exception e) {
+			return Utils.rethrowRuntimeException(e);
+		}
+	}	
 	
 	
 	

@@ -1,0 +1,77 @@
+{
+	"env" : {
+		"test1" : {
+			"subsystems" : {
+				"initConcurrency" : 1,
+				"entries" : {
+					"processMaintenance" : null,
+					"test" : null
+				}
+			}
+		},
+		"dev" : {
+		}
+	},
+
+	
+	"defaults" : {
+		"subsystems" : {
+			"initConcurrency" : 5,
+			"entries" : {
+				"processMaintenance" : {
+					"class" : "arapp.susbsystems.ProcessMaintenance",
+					"deadAfterMilliseconds" : 5000,
+					"removeDeadAfterMilliseconds" : 30000,
+					
+					"timers" : {
+						"touch" : {
+							"startAfterMilliseconds" : 0,
+							"milliseconds" : 1000
+						},
+						"maintenance" : {
+							"startAfterMilliseconds" : 1000,
+							"milliseconds" : 1000
+						},
+						"lsof" : {
+							"startAfterMilliseconds" : 10000,
+							"milliseconds" : 1000
+						}
+					}
+				},
+			
+				"test" : {
+					"class" : "testapp.TestSubSystem",
+					"depends" : ["processMaintenance"],
+					"timers" : {
+						"tick" : {
+							"startAfterMilliseconds" : 1000,
+							"milliseconds" : 100
+						},
+						"tock" : {
+							"milliseconds" : 200
+						}
+					}
+				},
+				"a" : {
+					"class" : "",
+					"enabled" : true,
+					"depends" : ["b","d"]
+				},
+				"b" : {
+					"class" : "",
+					"enabled" : true,
+					"depends" : ["c"]
+				},
+				"c" : {
+					"class" : "",
+					"enabled" : false,
+					"depends" : ["d"]
+				},
+				"d" : {
+					"enabled" : true,
+					"depends" : ["e"]
+				}
+			}
+		}
+	}
+}

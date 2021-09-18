@@ -11,4 +11,11 @@ all:
 clean:
 	@$(MAKE) -f arutils.mk clean ROOT=$(ROOT)
 
+clean_libs:
+	@$(MAKE) -f arutils.mk clean-libs ROOT=$(ROOT)
+
+libs:
+	@$(MAKE) -f arutils.mk get-libraries ROOT=$(ROOT)
+
+
 .PHONY: clean
