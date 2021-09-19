@@ -1,0 +1,100 @@
+{
+	"$import": {
+		"env": "./env.schema.json"
+	},
+	"definitions": {
+		"bootstrap": {
+			"type": "object",
+			"properties": {
+				"env" : {"$ref" : "EnvMap"},
+				"defaults": {"$ref": "env:Env"},
+				"bootstrap" : {"$ref" : "Bootstrap"}
+			}
+		},
+		"EnvMap" :{
+			"type": "object",
+			"additionalProperties" : {"$ref": "env:Env"},
+			"description" : "name to env definition map"
+		},
+		"Bootstrap" :{
+			"type": "object",
+			"properties": {
+				"shell" : {"type":"string"},
+				"abortOnError" : {"type":"boolean"},
+				"abortOnErrorIfShellEval" : {"type":"string"},
+				"overrideEnvFromEnvironmentVariable" : {"type":"string"},
+				"disableDatabaseEnvironmentVariable" : {"type":"string"},
+				"entries" : {
+					"type" : "array",
+					"items" : { "$ref" : "BootstrapPropertiesEntry"}
+				}
+			}
+		},
+		"BootstrapPropertiesEntry" : {
+			"type": "object",
+			"properties": {
+				"propertiesEntryType" : {"type":"string"}
+			},
+			"required": ["propertiesEntryType"]
+		},
+		"ShellEvalBootstrapEntry" : {
+			"$extends": "BootstrapPropertiesEntry",
+			"type": "object",
+			"description" : " propertiesEntryType - SHELL_EVAL. Success is exit status 0 + a non empty set of properties",
+			"properties": {
+				"shellArgument" : {"type":"string"},
+				"abortOnExecutionError" : {"type":"boolean"}
+			},
+			"required": ["shellArgument"]
+		},
+		"FileExecBootstrapEntry" : {
+			"$extends": "BootstrapPropertiesEntry",
+			"type": "object",
+			"description" : "propertiesEntryType - FILE_EXEC. Success is exit status 0",
+			"properties": {
+				"file" : {"type":"string"},
+				"args" : {"type":"array", "items" : {"type":"string"}},
+				"abortOnFileMissing" : {"type":"boolean"},
+				"abortOnFileNotExecutable" : {"type":"boolean"},
+				"abortOnExecutionError" : {"type":"boolean"}
+			},
+			"required": ["file"]
+		},
+		"FileReadBootstrapEntry" : {
+			"$extends": "BootstrapPropertiesEntry",
+			"type": "object",
+			"description" : "propertiesEntryType - FILE. Success is file exists",
+			"properties": {
+				"file" : {"type":"string"},
+				"abortOnLoadError" : {"type":"boolean"},
+				"abortOnFileMissing" : {"type":"boolean"}
+			},
+			"required": ["file"]
+		},
+		"BuildinBootstrapEntry" : {
+			"$extends": "BootstrapPropertiesEntry",
+			"type": "object",
+			"description" : "propertiesEntryType - BUILDIN",
+			"properties": {
+				"properties" : {"$ref":"BootstrapProperties"}
+			},
+			"required": ["properties"]
+		},
+		"BootstrapProperties" : {
+			"type": "object",
+			"properties": {
+				"dburl"	:	{"type":"string", "description" : "Default DB url"},
+				"dbuser":	{"type":"string"},
+				"dbpassword" : {"type":"string"},
+				"aesIvBase64" : {"type":"string"},
+				"aesKeyBase64" : {"type":"string"},
+				"rsaPrivatePKCS8Base64" : {"type":"string"},
+				"rsaPublicPKCS8Base64" : {"type":"string"},					
+				"debug" : {"type":"string"},
+				"env" : {"type":"string"}		
+			},
+			"additionalProperties" : {"type": "string"}
+		}
+	},
+	"$ref": "bootstrap"
+}
