@@ -2,7 +2,7 @@
 application bootstrap environment and bulk utils
 
 Here is a quick tutorial https://github.com/AlexRaybosh/arutils_App_Env_tut
-
+for application configurations
 
 ## Rational
 
