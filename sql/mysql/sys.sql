@@ -50,7 +50,7 @@ insert into env values (200, 'test', unix_timestamp()*1000);
 insert into env values (300, 'beta',  unix_timestamp()*1000);
 insert into env values (400, 'prod', unix_timestamp()*1000);
 
-insert into env_config (env_id,position,config,meta,last_ms) values (1,0,'process','{}',unix_timestamp()*1000);
+insert into env_config (env_id,position,config,meta,last_ms) values (1,0,'my_entry','{\"some value\":\"some override\"}',unix_timestamp()*1000);
 
 
 
@@ -68,7 +68,7 @@ create table if not exists cluster_member (
     constraint cluster_member_env_fk foreign key (env_id) references env(id) 
 ) engine=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-INSERT INTO cluster_member (id, hostname, member_type, tcp_port, meta, env_id, last_ms) VALUES (1, 'z440.vessalex.com', 'WEBSERVER', 8080, '{}', 1, unix_timestamp()*1000);
+INSERT INTO cluster_member (id, hostname, member_type, tcp_port, meta, env_id, last_ms) VALUES (1, 'z440.localdomain', 'WEBSERVER', 8080, '{}', 1, unix_timestamp()*1000);
 
 
 
