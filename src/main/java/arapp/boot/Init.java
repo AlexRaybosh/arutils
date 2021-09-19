@@ -18,6 +18,7 @@ import arutils.db.DBID;
 import arutils.util.DummyErrorFuture;
 import arutils.util.DummyFuture;
 import arutils.util.JsonUtils;
+import arutils.util.Utils;
 
 public 	class Init {
 	
@@ -30,6 +31,14 @@ public 	class Init {
 	final Env env;
 	final boolean hasDB;
 	final AppScope appScope;
+	
+	public final AppSec getAppSec() {
+		try {
+			return appSecFuture.get();
+		} catch (Exception e) {
+			return Utils.rethrowRuntimeException(e);
+		}
+	}
 	
 	public void derefAppSec()  {
 		try {

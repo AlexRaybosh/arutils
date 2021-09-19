@@ -140,18 +140,18 @@ public class InitSubSystems {
 		for (JsonElement el : JsonUtils.getJsonArrayIterable(conf, "depends")) {
 			String depName=JsonUtils.getString(el);
 			if (Utils.isEmpty(depName)) {
-				BootstrapEnv.logerr("Ignoring invalid dependency "+depName+" for subsystem "+name+ ": "+el);
+				BootstrapEnv.logerr("Ignoring invalid dependency \""+depName+"\" for subsystem \""+name+ "\" : "+el);
 				continue;
 			}
 			JsonElement depEntry = entries.get(depName);
 			if (depEntry==null) {
-				BootstrapEnv.logerr("Ignoring non-existent dependency "+depName+" for subsystem "+name+ ": "+conf);
+				BootstrapEnv.logerr("Ignoring non-existent dependency \""+depName+"\" for subsystem \""+name+ "\" : "+conf);
 				continue;
 			}
 			if (depEntry.isJsonNull()) 
 				continue;
 			if (!depEntry.isJsonObject()) {
-				BootstrapEnv.logerr("Ignoring invalid dependency "+depName+" : "+depEntry+" for subsystem "+name+ ": "+conf);
+				BootstrapEnv.logerr("Ignoring invalid dependency \""+depName+"\" : \""+depEntry+"\" for subsystem \""+name+ "\" : "+conf);
 				continue;
 			}
 			
@@ -162,7 +162,7 @@ public class InitSubSystems {
 				continue;
 			}
 			if (pathTraversed.contains(depName)) {
-				String msg="Loop dependency: "+depName+" detected for subsystem "+name+ "; path: "+pathTraversed;
+				String msg="Loop dependency: \""+depName+"\" detected for subsystem \""+name+ "\"; path: "+pathTraversed;
 				BootstrapEnv.logerr(msg);
 				throw new RuntimeException(msg);
 			}

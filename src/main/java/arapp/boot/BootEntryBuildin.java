@@ -26,7 +26,7 @@ public class BootEntryBuildin extends BootEntry {
 
 	@Override
 	public String getEnvName() {
-		return properties.getProperty("env");
+		return properties==null?null:properties.getProperty("env");
 	}
 	@Override
 	public Properties getProperties() {

@@ -92,14 +92,6 @@ create table if not exists system_process (
 
 
 
-create table if not exists system_process_lsof (
-	system_process_id bigint not null,
-    line_num int not null,
-    line mediumtext not null,
-    last_ms bigint null,
-    primary key (system_process_id,line_num)
-) engine=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
-
 drop table if exists word_dictionary;
 create table if not exists word_dictionary (
 	id int not null,

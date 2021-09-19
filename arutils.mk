@@ -29,7 +29,6 @@ get-libraries-src: $(ROOT)/javalibssrc/DONE
 
 $(ROOT)/javalibssrc/DONE:
 	@echo DOWNLOADING SRC JAVA LIBS
-	@rm -rf $(ROOT)/javalibssrc
 	@mkdir -p $(ROOT)/javalibssrc
 	curl -sS -o $(ROOT)/javalibssrc/commons-codec-1.15-sources.jar https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15-sources.jar
 	curl -sS -o $(ROOT)/javalibssrc/gson-2.8.7-sources.jar https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.7/gson-2.8.7-sources.jar
@@ -37,19 +36,20 @@ $(ROOT)/javalibssrc/DONE:
 	curl -sS -o $(ROOT)/javalibssrc/postgresql-42.2.23-sources.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.23/postgresql-42.2.23-sources.jar
 	curl -sS -o $(ROOT)/javalibssrc/bcprov-jdk15on-1.69-sources.jar https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69-sources.jar
 	touch $(ROOT)/javalibssrc/DONE
+	#@rm -rf $(ROOT)/javalibssrc
 
 get-libraries: get-libraries-src $(ROOT)/javalibs/DONE
 
 $(ROOT)/javalibs/DONE:
 	@echo DOWNLOADING JAVA LIBS
-	@rm -rf $(ROOT)/javalibs
 	@mkdir -p $(ROOT)/javalibs
-	curl -sS -o $(ROOT)/javalibs/commons-codec-1.15.jar https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15.jar
-	curl -sS -o $(ROOT)/javalibs/gson-2.8.7.jar https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.7/gson-2.8.7.jar
-	curl -sS -o $(ROOT)/javalibs/mysql-connector-java-5.1.49.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.49/mysql-connector-java-5.1.49.jar
-	curl -sS -o $(ROOT)/javalibs/postgresql-42.2.23.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.23/postgresql-42.2.23.jar
-	curl -sS -o $(ROOT)/javalibs/bcprov-jdk15on-1.69.jar https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69.jar
+	curl -sS -o $(ROOT)/javalibs/commons-codec-1.15.jar https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15.jar || exit 1
+	curl -sS -o $(ROOT)/javalibs/gson-2.8.7.jar https://repo1.maven.org/maven2/com/google/code/gson/gson/2.8.7/gson-2.8.7.jar || exit 1
+	curl -sS -o $(ROOT)/javalibs/mysql-connector-java-5.1.49.jar https://repo1.maven.org/maven2/mysql/mysql-connector-java/5.1.49/mysql-connector-java-5.1.49.jar || exit 1
+	curl -sS -o $(ROOT)/javalibs/postgresql-42.2.23.jar https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.23/postgresql-42.2.23.jar || exit 1
+	curl -sS -o $(ROOT)/javalibs/bcprov-jdk15on-1.69.jar https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk15on/1.69/bcprov-jdk15on-1.69.jar || exit 1
 	touch $(ROOT)/javalibs/DONE
+	#@rm -rf $(ROOT)/javalibs
 
 #JAVA_LIBS:=$(shell find $(ROOT)/javalibs -name '*.jar' -printf '%p:' | sed -e 's/\/\//\//g' -e 's/:$$//g')
 #$(info JAVA_LIBS $(JAVA_LIBS))
@@ -111,6 +111,6 @@ clean-libs:
 	rm -rf $(ROOT)/javalibssrc $(ROOT)/javalibs
 
 clean:
-	rm -rf $(ROOT)/javalibssrc $(ROOT)/javalibs $(ROOT)/java_build $(ROOT)/java_list $(ROOT)/native_build $(ROOT)/target
+	rm -rf $(ROOT)/java_build $(ROOT)/java_list $(ROOT)/native_build $(ROOT)/target
 	@$(MAKE) -C $(ROOT)/src_native clean ROOT=$(ROOT) JAVA_BUILD=$(JAVA_BUILD) SRC_NATIVE=$(SRC_NATIVE) NATIVE_JAVA_UTILS_SO_VERSION=$(NATIVE_JAVA_UTILS_SO_VERSION)
 	

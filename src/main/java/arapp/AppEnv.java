@@ -77,6 +77,21 @@ public class AppEnv {
 	public static boolean wordCached(String base, Number id) {return getAppScope().getWordCached(base, id);}
 	
 	public static long getTime() {return getAppScope().getTime();}
+	public static String envName() {return getAppScope().getEnv().getName();}
+
+	public static byte[] encryptAES(byte[] value, int off, int len) {return getAppScope().encryptAES(value, off, len);}
+	public static byte[] decryptAES(byte[] value, int off, int len) {return getAppScope().decryptAES(value, off, len);}
+	public static byte[] encryptAES(byte[] value) {return getAppScope().encryptAES(value);}
+	public static byte[] decryptAES(byte[] value) {return getAppScope().decryptAES(value);}
+	
+	public static byte[] encryptPrivateRSA(byte[] value, int off, int len) {return getAppScope().encryptPrivateRSA(value, off, len);}	
+	public static byte[] decryptPublicRSA(byte[] value, int off, int len) {return getAppScope().decryptPublicRSA(value, off, len);}
+	public static byte[] signSHA256PrivateRSA(byte[] value, int off, int len) {return getAppScope().signSHA256PrivateRSA(value, off, len);}
+	public static byte[] encryptPrivateRSA(byte[] value) {return getAppScope().encryptPrivateRSA(value);}	
+	public static byte[] decryptPublicRSA(byte[] value) {return getAppScope().decryptPublicRSA(value);}
+	public static byte[] signSHA256PrivateRSA(byte[] value) {return getAppScope().signSHA256PrivateRSA(value);}
+	
+	
 	
 	
 	public static void reloadEnvironment() {getAppScope().reloadEnvironment();}	
@@ -101,5 +116,6 @@ public class AppEnv {
 			throw new RuntimeException("Failed to log oringal error with msg: "+msg);
 		}
 	}
+
 	
 }

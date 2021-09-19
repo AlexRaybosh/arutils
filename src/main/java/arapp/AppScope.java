@@ -325,9 +325,21 @@ public class AppScope {
 
 	public final JsonObject getMeta() {return getEnv().getMeta();}
 
-	public BasicLogger getLogger() {
-		return logger;
-	}
+	public BasicLogger getLogger() {return logger;}
+	
+	
+	public final byte[] encryptAES(byte[] value, int off, int len) {return getInit().getAppSec().encryptAES(value, off, len);}
+	public final byte[] decryptAES(byte[] value, int off, int len) {return getInit().getAppSec().decryptAES(value, off, len);}
+	public final byte[] encryptAES(byte[] value) {return getInit().getAppSec().encryptAES(value);}
+	public final byte[] decryptAES(byte[] value) {return getInit().getAppSec().decryptAES(value);}
+	
+	public final byte[] encryptPrivateRSA(byte[] value, int off, int len) {return getInit().getAppSec().encryptPrivateRSA(value, off, len);}	
+	public final byte[] decryptPublicRSA(byte[] value, int off, int len) {return getInit().getAppSec().decryptPublicRSA(value, off, len);}
+	public final byte[] signSHA256PrivateRSA(byte[] value, int off, int len) {return getInit().getAppSec().signSHA256PrivateRSA(value, off, len);}
+	
+	public final byte[] encryptPrivateRSA(byte[] value) {return getInit().getAppSec().encryptPrivateRSA(value);}	
+	public final byte[] decryptPublicRSA(byte[] value) {return getInit().getAppSec().decryptPublicRSA(value);}
+	public final byte[] signSHA256PrivateRSA(byte[] value) {return getInit().getAppSec().signSHA256PrivateRSA(value);}
 	
 	
 

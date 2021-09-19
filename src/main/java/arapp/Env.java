@@ -14,6 +14,9 @@ public class Env {
 	public final Integer getId() {
 		return id;
 	}
+	public final String getName() {
+		return name;
+	}
 
 	public final JsonObject getMeta() {
 		return meta;

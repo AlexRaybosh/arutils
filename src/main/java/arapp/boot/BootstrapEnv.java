@@ -147,7 +147,6 @@ public class BootstrapEnv {
 		if (entry!=null) {
 			envName=entry.getEnvName();
 			properties=entry.getProperties();
-			
 		}
 		
 		if (!Utils.isEmpty(appScope.getPresetEnvName())) {
@@ -160,8 +159,10 @@ public class BootstrapEnv {
 			if (envName==null) envName="undefined";		
 		}
 
-		
-		
+		if (buildInConfig==null) {
+			throw new RuntimeException("./boostrap.json resource/file on classpath or cwd is missing or unreasonable empty");
+		}
+		if (properties==null) properties=new Properties();
 		
 		JsonObject myConf = JsonUtils.getJsonObject(buildInConfig, "env", envName);
 		JsonObject defConf= JsonUtils.getJsonObject(buildInConfig, "defaults");
