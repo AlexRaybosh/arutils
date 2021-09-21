@@ -36,14 +36,14 @@ public class T4 {
 
 	}
 
-	private static ServiceBackend createBackend1() {
+	private static ServiceBackend<Integer> createBackend1() {
 
-		ServiceBackend backend=new ServiceBackend() {
+		ServiceBackend<Integer> backend=new ServiceBackend<Integer>() {
 			@Override
-			public void process(List<Request> bulk) throws Exception {
+			public void process(List<Request<Integer>> bulk) throws Exception {
 				String threadName=Thread.currentThread().getName();
 				StringBuilder sb=new StringBuilder(threadName+" : ");
-				for (Request r : bulk) {
+				for (Request<Integer> r : bulk) {
 					Integer num=(Integer)r.getArgs()[0];
 					r.setResult(num*num);
 					sb.append("\tN-").append(num);

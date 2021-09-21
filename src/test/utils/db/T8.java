@@ -87,13 +87,13 @@ public class T8 {
 	}
 
 	private static ServiceBackend createShoveItBackend(final DB db) {
-		ServiceBackend backend=new ServiceBackend() {
-			public void process(final List<Request> bulk) throws Exception {
+		ServiceBackend backend=new ServiceBackend<Void>() {
+			public void process(final List<Request<Void>> bulk) throws Exception {
 				//String threadName=Thread.currentThread().getName();
 				//System.out.println(threadName+" : "+bulk.size());
 				db.commit(new StatementBlock<Void>() {
 					public Void execute(ConnectionWrap cw) throws SQLException, InterruptedException {
-						cw.batchInsert("insert into tempdb.X values (?,?,?,?,?,?,?,?,?)", bulk);
+						cw.batchInsertRequests("insert into tempdb.X values (?,?,?,?,?,?,?,?,?)", bulk);
 						//cw.update("insert into workdb.t0 select * from tempdb.X",true);
 						cw.update("delete from tempdb.X",true);
 						return null;

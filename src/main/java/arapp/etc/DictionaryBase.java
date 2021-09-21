@@ -26,10 +26,10 @@ public class DictionaryBase {
 	final String tableName;
 	final String base;
 	final AsyncEngine asyncEngine=AsyncEngine.create();
-	final Service lookupCreateByName;
-	final Service lookupById;
-	final Service checkByName;
-	final Service checkById;	
+	final Service<DictionaryWord> lookupCreateByName;
+	final Service<DictionaryWord> lookupById;
+	final Service<Boolean> checkByName;
+	final Service<Boolean> checkById;	
 	final String selectByNameSql;
 	final String selectSingleByNameSql;
 	final String selectByIdSql;
@@ -59,30 +59,26 @@ public class DictionaryBase {
 		idCache=new IdCache();
 		nameCache=new NameCache();
 		MAX_WORD_LENGTH=JsonUtils.getInteger(700, appScope.getMeta(),"etc","dictionary",base,"maxWordLength");
-		lookupCreateByName=asyncEngine.register("lookupCreateByName", new ServiceBackend() {	
-			public void process(List<Request> bulk) throws Exception {lookupCreateByNameBulk(bulk);}
-			public long getWorkerReleaseTimeout() {return 0;}
+		lookupCreateByName=asyncEngine.register("lookupCreateByName", new ServiceBackend<DictionaryWord>() {	
+			public void process(List<Request<DictionaryWord>> bulk) throws Exception {lookupCreateByNameBulk(bulk);}
 			public int getMaxWorkers() {return JsonUtils.getInteger(3, appScope.getMeta(),"etc","dictionary",base,"concurrency");}
 			public int getMaxQueuedRequests() {return JsonUtils.getInteger(10000, appScope.getMeta(),"etc","dictionary",base,"queueSize");}
 			public int getMaxBulkSize() {return JsonUtils.getInteger(256, appScope.getMeta(),"etc","dictionary",base,"bulkSize");}
 		});
-		lookupById=asyncEngine.register("lookupById", new ServiceBackend() {	
-			public void process(List<Request> bulk) throws Exception {lookupByIdBulk(bulk);}
-			public long getWorkerReleaseTimeout() {return 0;}
+		lookupById=asyncEngine.register("lookupById", new ServiceBackend<DictionaryWord>() {	
+			public void process(List<Request<DictionaryWord>> bulk) throws Exception {lookupByIdBulk(bulk);}
 			public int getMaxWorkers() {return JsonUtils.getInteger(3, appScope.getMeta(),"etc","dictionary",base,"concurrency");}
 			public int getMaxQueuedRequests() {return JsonUtils.getInteger(10000, appScope.getMeta(),"etc","dictionary",base,"queueSize");}
 			public int getMaxBulkSize() {return JsonUtils.getInteger(256, appScope.getMeta(),"etc","dictionary",base,"bulkSize");}
 		});
-		checkByName=asyncEngine.register("checkByName", new ServiceBackend() {	
-			public void process(List<Request> bulk) throws Exception {checkByNameBulk(bulk);}
-			public long getWorkerReleaseTimeout() {return 0;}
+		checkByName=asyncEngine.register("checkByName", new ServiceBackend<Boolean>() {	
+			public void process(List<Request<Boolean>> bulk) throws Exception {checkByNameBulk(bulk);}
 			public int getMaxWorkers() {return JsonUtils.getInteger(3, appScope.getMeta(),"etc","dictionary",base,"concurrency");}
 			public int getMaxQueuedRequests() {return JsonUtils.getInteger(10000, appScope.getMeta(),"etc","dictionary",base,"queueSize");}
 			public int getMaxBulkSize() {return JsonUtils.getInteger(256, appScope.getMeta(),"etc","dictionary",base,"bulkSize");}
 		});
-		checkById=asyncEngine.register("checkById", new ServiceBackend() {	
-			public void process(List<Request> bulk) throws Exception {checkByIdBulk(bulk);}
-			public long getWorkerReleaseTimeout() {return 0;}
+		checkById=asyncEngine.register("checkById", new ServiceBackend<Boolean>() {	
+			public void process(List<Request<Boolean>> bulk) throws Exception {checkByIdBulk(bulk);}
 			public int getMaxWorkers() {return JsonUtils.getInteger(2, appScope.getMeta(),"etc","dictionary",base,"concurrency");}
 			public int getMaxQueuedRequests() {return JsonUtils.getInteger(10000, appScope.getMeta(),"etc","dictionary",base,"queueSize");}
 			public int getMaxBulkSize() {return JsonUtils.getInteger(256, appScope.getMeta(),"etc","dictionary",base,"bulkSize");}
@@ -102,19 +98,19 @@ public class DictionaryBase {
 	
 	
 	
-	protected void checkByNameBulk(List<Request> bulk) throws SQLException, InterruptedException {
+	protected void checkByNameBulk(List<Request<Boolean>> bulk) throws SQLException, InterruptedException {
 		if (bulk.size()==1) {
-			Request r = bulk.get(0);
+			Request<Boolean> r = bulk.get(0);
 			final String name=(String)r.getArgs()[0];
 			Boolean exists=Utils.toLong( appScope.getFlexDB().selectSingle(selectSingleByNameSql, true, name)) !=null;
 			r.setResult(exists);
 			return;
 		}
 		
-		final Map<String,List<Request>> map=new HashMap<>();  
-		for (Request r : bulk) {
+		final Map<String,List<Request<Boolean>>> map=new HashMap<>();  
+		for (Request<Boolean> r : bulk) {
 			String str=(String)r.getArgs()[0];
-			List<Request> lst = map.get(str);
+			List<Request<Boolean>> lst = map.get(str);
 			if (lst==null) {lst=new ArrayList<>(1);	map.put(str, lst);}
 			lst.add(r);
 		}
@@ -126,8 +122,8 @@ public class DictionaryBase {
 					String name=Utils.toString(row[0]);
 					Long id=Utils.toLong(row[1]);
 					if (id!=null) {
-						List<Request> lst = map.remove(name);
-						for (Request r : lst) r.setResult(true);
+						List<Request<Boolean>> lst = map.remove(name);
+						for (Request<Boolean> r : lst) r.setResult(true);
 					}
 				}
 				if (mysqlDialect) cw.update("delete from common_tmp", true); // only for mysql
@@ -137,13 +133,13 @@ public class DictionaryBase {
 				return super.onError(cw, willAttemptToRetry, ex, start, now);
 			}			
 		});
-		for (List<Request> lst : map.values()) {
-			for (Request r : lst) r.setResult(false);
+		for (List<Request<Boolean>> lst : map.values()) {
+			for (Request<Boolean> r : lst) r.setResult(false);
 		}
 	}
-	final void lookupCreateByNameBulk(List<Request> bulk) throws Exception {
+	final void lookupCreateByNameBulk(List<Request<DictionaryWord>> bulk) throws Exception {
 		if (bulk.size()==1) {
-			Request r = bulk.get(0);
+			Request<DictionaryWord> r = bulk.get(0);
 			final String name=(String)r.getArgs()[0];
 			Long id=appScope.getFlexDB().commit(new StatementBlock<Long>() {
 				public Long execute(ConnectionWrap cw) throws SQLException, InterruptedException {
@@ -165,10 +161,10 @@ public class DictionaryBase {
 			return;
 		}
 		
-		final Map<String,List<Request>> map=new HashMap<>();  
-		for (Request r : bulk) {
+		final Map<String,List<Request<DictionaryWord>>> map=new HashMap<>();  
+		for (Request<DictionaryWord> r : bulk) {
 			String str=(String)r.getArgs()[0];
-			List<Request> lst = map.get(str);
+			List<Request<DictionaryWord>> lst = map.get(str);
 			if (lst==null) {lst=new ArrayList<>(1);	map.put(str, lst);}
 			lst.add(r);
 		}
@@ -183,9 +179,9 @@ public class DictionaryBase {
 					String name=Utils.toString(row[0]);
 					Long id=Utils.toLong(row[1]);
 					if (id!=null) {
-						List<Request> lst = map.remove(name);
+						List<Request<DictionaryWord>> lst = map.remove(name);
 						DictionaryWord dw=new DictionaryWord(id,name);
-						for (Request r : lst) {
+						for (Request<DictionaryWord> r : lst) {
 							r.setResult(dw);
 						}
 						fresh.add(dw);
@@ -211,9 +207,9 @@ public class DictionaryBase {
 		for (Entry<String, Long> e : nameToId.entrySet()) {
 			String name=e.getKey();
 			Long id=e.getValue();
-			List<Request> lst = map.remove(name);
+			List<Request<DictionaryWord>> lst = map.remove(name);
 			DictionaryWord dw=new DictionaryWord(id,name);
-			for (Request r : lst) r.setResult(dw);
+			for (Request<DictionaryWord> r : lst) r.setResult(dw);
 			fresh.add(dw);
 		}
 		synchronized (lock) {
@@ -224,18 +220,18 @@ public class DictionaryBase {
 		}
 	}
 
-	protected void checkByIdBulk(List<Request> bulk) throws SQLException, InterruptedException {
+	protected void checkByIdBulk(List<Request<Boolean>> bulk) throws SQLException, InterruptedException {
 		if (bulk.size()==1) {
-			Request r = bulk.get(0);
+			Request<Boolean> r = bulk.get(0);
 			Long id=(Long)r.getArgs()[0];
 			String name=Utils.toString( appScope.getFlexDB().selectSingle(selectSingleByIdSql, true, id) );
 			r.setResult(name!=null);
 			return;
 		}
-		final Map<Long,List<Request>> map=new HashMap<>();  
-		for (Request r : bulk) {
+		final Map<Long,List<Request<Boolean>>> map=new HashMap<>();  
+		for (Request<Boolean> r : bulk) {
 			Long id=(Long)r.getArgs()[0];
-			List<Request> lst = map.get(id);
+			List<Request<Boolean>> lst = map.get(id);
 			if (lst==null) {lst=new ArrayList<>(1);	map.put(id, lst);}
 			lst.add(r);
 		}
@@ -247,8 +243,8 @@ public class DictionaryBase {
 				for (Object[] row : cw.select(selectByIdSql,true)) {
 					Long origId=Utils.toLong(row[0]);
 					Long id=Utils.toLong(row[1]);				
-					List<Request> lst = map.remove(origId);
-					for (Request r : lst) r.setResult(id!=null);
+					List<Request<Boolean>> lst = map.remove(origId);
+					for (Request<Boolean> r : lst) r.setResult(id!=null);
 				}
 				if (mysqlDialect) cw.update("delete from common_tmp", true); // only for mysql
 				return null;
@@ -259,9 +255,9 @@ public class DictionaryBase {
 		});
 	}
 	
-	final void lookupByIdBulk(List<Request> bulk) throws SQLException, InterruptedException {
+	final void lookupByIdBulk(List<Request<DictionaryWord>> bulk) throws SQLException, InterruptedException {
 		if (bulk.size()==1) {
-			Request r = bulk.get(0);
+			Request<DictionaryWord> r = bulk.get(0);
 			Long id=(Long)r.getArgs()[0];
 			String name=Utils.toString( appScope.getFlexDB().selectSingle(selectSingleByIdSql, true, id) );
 			if (name==null) {
@@ -277,10 +273,10 @@ public class DictionaryBase {
 			}
 			return;
 		}
-		final Map<Long,List<Request>> map=new HashMap<>();  
-		for (Request r : bulk) {
+		final Map<Long,List<Request<DictionaryWord>>> map=new HashMap<>();  
+		for (Request<DictionaryWord> r : bulk) {
 			Long id=(Long)r.getArgs()[0];
-			List<Request> lst = map.get(id);
+			List<Request<DictionaryWord>> lst = map.get(id);
 			if (lst==null) {lst=new ArrayList<>(1);	map.put(id, lst);}
 			lst.add(r);
 		}
@@ -294,14 +290,14 @@ public class DictionaryBase {
 					Long origId=Utils.toLong(row[0]);
 					Long id=Utils.toLong(row[1]);
 					String name=Utils.toString(row[2]);
-					List<Request> lst = map.remove(origId);
+					List<Request<DictionaryWord>> lst = map.remove(origId);
 					if (id!=null) {
 						DictionaryWord dw=new DictionaryWord(id,name);
-						for (Request r : lst) r.setResult(dw);
+						for (Request<DictionaryWord> r : lst) r.setResult(dw);
 						fresh.add(dw);
 					} else {
 						RuntimeException ex = new RuntimeException("id "+origId+" does not exist in "+tableName);
-						for (Request r : lst) r.errored(ex);
+						for (Request<DictionaryWord> r : lst) r.errored(ex);
 					}
 				}
 				if (mysqlDialect) cw.update("delete from common_tmp", true); // only for mysql
@@ -336,7 +332,7 @@ public class DictionaryBase {
 			if (stored!=null) return stored;
 		}
 		try {
-			Future<DictionaryWord> ret = lookupCreateByName.<DictionaryWord>call(asyncEngine, word);
+			Future<DictionaryWord> ret = lookupCreateByName.call(asyncEngine, word);
 			synchronized (lock) {
 				nameCache.put(word, ret);
 			}
@@ -351,7 +347,7 @@ public class DictionaryBase {
 			if (stored!=null) return stored;
 		}
 		try {
-			Future<DictionaryWord> ret = lookupById.<DictionaryWord>call(asyncEngine, id);
+			Future<DictionaryWord> ret = lookupById.call(asyncEngine, id);
 			synchronized (lock) {
 				idCache.put(id, ret);
 			}
@@ -366,7 +362,7 @@ public class DictionaryBase {
 	public final Future<Boolean> has(String word) {
 		if (word==null) return new DummyFuture<Boolean>(false);
 		try {
-			return checkByName.<Boolean>call(asyncEngine, word);
+			return checkByName.call(asyncEngine, word);
 		} catch (InterruptedException e) {
 			return Utils.rethrowRuntimeException(e);
 		}
@@ -375,7 +371,7 @@ public class DictionaryBase {
 	public final Future<Boolean> has(Number id) {
 		if (id==null || id.longValue()==0) return new DummyFuture<Boolean>(false);
 		try {
-			return checkById.<Boolean>call(asyncEngine, id.longValue());
+			return checkById.call(asyncEngine, id.longValue());
 		} catch (InterruptedException e) {
 			return Utils.rethrowRuntimeException(e);
 		}

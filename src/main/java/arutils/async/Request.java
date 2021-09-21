@@ -18,20 +18,20 @@
 package arutils.async;
 
 
-public class Request {
+public class Request<T> {
 
 	final private Workload workload;
-	final private CompletionCallback callback;
+	final private CompletionCallback<T> callback;
 	final private Object[] args;
 	private boolean reported;
 
-	public Request(Workload workload, CompletionCallback callback, Object[] args) {
+	public Request(Workload workload, CompletionCallback<T> callback, Object[] args) {
 		this.workload=workload;
 		this.callback=callback;
 		this.args=args;
 	}
 
-	public void errored(Throwable e) {
+	public final void errored(Throwable e) {
 		if (!reported) {
 			reported=true;
 			try {
@@ -42,7 +42,7 @@ public class Request {
 		}		
 	}
 
-	public void completed() {
+	public final void completed() {
 		if (!reported) {
 			reported=true;
 			try {
@@ -53,11 +53,16 @@ public class Request {
 		}
 	}
 
-	public Object[] getArgs() {
+	public final Object[] getArgs() {
 		return args;
 	}
+	@SuppressWarnings("unchecked")
+	public final <A>  A arg(int i) {
+		return (A)args[i];
+	}
 
-	public void setResult(Object result) {
+
+	public final void setResult(T result) {
 		if (!reported) {
 			reported=true;
 			try {

@@ -29,21 +29,21 @@ public abstract class AsyncEngine implements Workload {
 	 * @param serviceName - backend name registered with {@link Workload#register(java.lang.String,ServiceBackend)} method.
 	 * @see engine.Workload#call... methods
 	 */
-	public abstract Result call(String serviceName, Object... args) throws InterruptedException;
-	public abstract void callWithCallback(String serviceName, CompletionCallback callback, Object... args) throws InterruptedException;
-	public abstract Result callNoLimit(String serviceName, Object... args) throws InterruptedException;
-	public abstract void callWithCallbackNoLimit(String serviceName, CompletionCallback callback, Object... args) throws InterruptedException;
+	public abstract <T> Result<T> call(String serviceName, Object... args) throws InterruptedException;
+	public abstract <T> void callWithCallback(String serviceName, CompletionCallback<T> callback, Object... args) throws InterruptedException;
+	public abstract <T> Result<T> callNoLimit(String serviceName, Object... args) throws InterruptedException;
+	public abstract <T> void callWithCallbackNoLimit(String serviceName, CompletionCallback<T> callback, Object... args) throws InterruptedException;
 
 	
 
 
 	public abstract Workload createWorkload();
 
-	public abstract Service getService(String serviceName);
+	public abstract <T> Service<T> getService(String serviceName);
 
-	public abstract Service register(String serviceName, ServiceBackend backend);
-	public abstract Service registerIfAbsent(String serviceName, ServiceBackend backend);
-	public abstract Service register(String serviceName, ServiceBackend backend, Workload w);
+	public abstract <T> Service<T> register(String serviceName, ServiceBackend<T> backend);
+	public abstract <T> Service<T> registerIfAbsent(String serviceName, ServiceBackend<T> backend);
+	public abstract <T> Service<T> register(String serviceName, ServiceBackend<T> backend, Workload w);
 	
 	/*public abstract List<Runnable> shutdownNow();
 	public abstract void shutdown();

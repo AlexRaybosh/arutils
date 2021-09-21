@@ -34,11 +34,11 @@ import arutils.async.ServiceBackend;
 import arutils.async.Workload;
 
 
-public class ServiceImpl implements Service {
+public class ServiceImpl<T> implements Service<T> {
 
-	final private AsyncEngineImpl engine;
-	final private ServiceBackend backend;
-	final private ArrayDeque<Request> requestsQueue= new ArrayDeque<>();
+	//final private AsyncEngineImpl engine;
+	final private ServiceBackend<T> backend;
+	final private ArrayDeque<Request<T>> requestsQueue= new ArrayDeque<>();
 	final private Lock lock=new ReentrantLock();
 	final private Condition requestAddedCond=lock.newCondition();
 	final private Condition requestDrainedCond=lock.newCondition();
@@ -50,8 +50,8 @@ public class ServiceImpl implements Service {
 	//private static final boolean DEBUG = System.getenv("DEBUG")!=null;
 
 
-	public ServiceImpl(AsyncEngineImpl engine, ServiceBackend backend,Workload trackingWorkload) {
-		this.engine=engine;
+	public ServiceImpl(AsyncEngineImpl engine, ServiceBackend<T> backend,Workload trackingWorkload) {
+		//this.engine=engine;
 		this.backend=backend;
 		this.trackingWorkload=trackingWorkload;
 		MAX_WORKERS=backend.getMaxWorkers();
@@ -79,22 +79,22 @@ public class ServiceImpl implements Service {
 	}
 
 	@Override
-	public <T> Result call(Workload w, Object... args) throws InterruptedException {
+	public Result<T> call(Workload w, Object... args) throws InterruptedException {
 		ResultImpl<T> callback=new ResultImpl<T>(args);
 		callWithCallback(w, callback,args);
 		return callback;
 	}
 	
 	@Override
-	public <T> Result callNoLimit(Workload w, Object... args) throws InterruptedException {
+	public Result<T> callNoLimit(Workload w, Object... args) throws InterruptedException {
 		ResultImpl<T> callback=new ResultImpl<T>(args);
 		callWithCallbackNoLimit(w, callback, args);
 		return callback;
 	}
 
 	@Override
-	public <T> void callWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
-		Request req=new Request(w,callback,args);
+	public void callWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		Request<T> req=new Request<T>(w,callback,args);
 		w.callSubmitted();
 		lock.lockInterruptibly();
 		try {
@@ -110,8 +110,8 @@ public class ServiceImpl implements Service {
 
 	
 	@Override
-	public <T> void callWithCallbackNoLimit(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
-		Request req=new Request(w,callback,args);
+	public void callWithCallbackNoLimit(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		Request<T> req=new Request<T>(w,callback,args);
 		w.callSubmitted();
 		lock.lockInterruptibly();
 		try {
@@ -124,12 +124,12 @@ public class ServiceImpl implements Service {
 	}
 	
 	@Override
-	public <T> void callWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException {
+	public void callWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException {
 		callWithCallback(trackingWorkload, callback, args);
 	}
 
 	@Override
-	public <T> void callWithCallbackNoLimit(CompletionCallback<T> callback, Object... args) throws InterruptedException {
+	public void callWithCallbackNoLimit(CompletionCallback<T> callback, Object... args) throws InterruptedException {
 		callWithCallbackNoLimit(trackingWorkload, callback, args);
 	}
 	
@@ -139,13 +139,13 @@ public class ServiceImpl implements Service {
 	}
 	
 	@Override
-	public <T> boolean tryCallWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException {
+	public boolean tryCallWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException {
 		return tryCallWithCallback(trackingWorkload, callback, args);
 	}
 	
 	@Override
-	public <T> boolean tryCallWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
-		Request req=new Request(w,callback,args);
+	public boolean tryCallWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		Request<T> req=new Request<>(w,callback,args);
 		lock.lockInterruptibly();
 		try {
 			while (requestsQueue.size()>=MAX_REQUESTS)
@@ -178,9 +178,9 @@ public class ServiceImpl implements Service {
 						}
 					}
 					
-					ArrayList<Request> bulk=new ArrayList<>(Math.min(bulkSize, requestsQueue.size()));
+					ArrayList<Request<T>> bulk=new ArrayList<>(Math.min(bulkSize, requestsQueue.size()));
 					while (requestsQueue.size()>0 && bulk.size()<bulkSize) {			
-						Request r=requestsQueue.removeLast();
+						Request<T> r=requestsQueue.removeLast();
 						bulk.add(r);
 					}
 					requestDrainedCond.signalAll();
@@ -189,13 +189,13 @@ public class ServiceImpl implements Service {
 						lock.unlock();
 						try {
 							backend.process(Collections.unmodifiableList(bulk));
-							for (Request r : bulk) {
+							for (Request<T> r : bulk) {
 								try {
 									r.completed();
 								} catch (Throwable tt) {}
 							}
 						} catch (Throwable e) {
-							for (Request r : bulk) {try {r.errored(e);} catch (Throwable tt) {}}
+							for (Request<T> r : bulk) {try {r.errored(e);} catch (Throwable tt) {}}
 						}
 					} finally {
 						lock.lockInterruptibly();

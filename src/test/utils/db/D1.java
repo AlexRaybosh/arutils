@@ -27,29 +27,29 @@ import arutils.util.EncodingUtils;
 public class D1 {
 
 	public static void main(String[] args) throws Exception {
-		DB db=DB.create("jdbc:mysql://localhost:3306/?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true", "business", "business");
+		DB db=DB.create("jdbc:mysql://localhost:3306/test2?allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true&useSSL=false", "test2", "");
 		//		DB db=DB.create("jdbc:oracle:thin:@(DESCRIPTION=(sdu=32000)(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.2)(PORT=1521))(CONNECT_DATA=(SID=orcl)(SERVER=DEDICATED)))", "business", "business");		
 		AsyncEngine engine=AsyncEngine.create();
 		engine.register("shoveIt", createShoveItBackend(db));
 		
 		try {
 
-			DBID dbid=new DBID(db,"workdb.seq");
+			DBID dbid=new DBID(db,"seq");
 
-			db.update("drop table if exists  workdb.d1_uuid ");
-			db.update("create table workdb.d1_uuid ("
+			db.update("drop table if exists  d1_uuid ");
+			db.update("create table d1_uuid ("
 					+ "doc_id int unsigned not null,"
 					+ "sec_id int unsigned not null,"
 					+ "uuid binary(16) not null,"
 					+ "primary key(doc_id,sec_id) "
-					//+ ",unique index (uuid)"
+					+ ",unique index (uuid)"
 					+") engine=innodb"
 					);
 
 			db.setBatchSize(4096);
 			
-			CompletionCallback callback=new CompletionCallback() {
-				public void completed(Workload workload, Object ret,Object[] args) {}
+			CompletionCallback<Void> callback=new CompletionCallback<Void>() {
+				public void completed(Workload workload, Void ret,Object[] args) {}
 				public void errored(Workload workload, Throwable e,	Object[] args) {
 					e.printStackTrace();
 					System.exit(1);
@@ -79,9 +79,9 @@ public class D1 {
 		}
 	}
 
-	private static ServiceBackend createShoveItBackend(final DB db) {
-		ServiceBackend backend=new ServiceBackend() {
-			public void process(final List<Request> bulk) throws Exception {
+	private static ServiceBackend<Void> createShoveItBackend(final DB db) {
+		ServiceBackend<Void> backend=new ServiceBackend<Void>() {
+			public void process(final List<Request<Void>> bulk) throws Exception {
 				//String threadName=Thread.currentThread().getName();
 				//System.out.println(threadName+" : "+bulk.size());
 				db.commit(new StatementBlock<Void>() {

@@ -33,7 +33,7 @@ public class InitSubSystems {
 	final Map<String,Set<String>> subDependency=new HashMap<>();
 	final AppScope appScope;
 	final AsyncEngine asyncEngine=AsyncEngine.create();
-	final Service initService;
+	final Service<SubSystemStub> initService;
 	final Map<String, Future<SubSystemStub>> appSubSystems;
 	final boolean initial;
 	
@@ -68,11 +68,11 @@ public class InitSubSystems {
 			++cnt;
 		}
 		
-		initService=asyncEngine.register("init",new ServiceBackend() {
+		initService=asyncEngine.register("init",new ServiceBackend<SubSystemStub>() {
 			
 			@Override
-			public void process(List<Request> bulk) throws Exception {
-				for (Request r : bulk) {
+			public void process(List<Request<SubSystemStub>> bulk) throws Exception {
+				for (Request<SubSystemStub> r : bulk) {
 					String name=(String)r.getArgs()[0];
 					if (initial) ss.get().setSubInitThread(name, true,subDependency);
 					try {
@@ -83,7 +83,6 @@ public class InitSubSystems {
 					}
 				}
 			}
-			public long getWorkerReleaseTimeout() {return 0;}
 			public int getMaxWorkers() {return initConcurrency;}
 			public int getMaxQueuedRequests() {return 100;}
 			public int getMaxBulkSize() {return 1;}

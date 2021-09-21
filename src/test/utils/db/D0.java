@@ -27,7 +27,7 @@ import arutils.util.EncodingUtils;
 public class D0 {
 
 	public static void main(String[] args) throws Exception {
-		DB db=DB.create("jdbc:mysql://localhost:3306/?autoReconnect=true&allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true", "test1", "");
+		DB db=DB.create("jdbc:mysql://localhost:3306/test2?allowMultiQueries=true&cacheResultSetMetadata=true&emptyStringsConvertToZero=false&useInformationSchema=true&useServerPrepStmts=true&rewriteBatchedStatements=true&useSSL=false", "test2", "");
 		//		DB db=DB.create("jdbc:oracle:thin:@(DESCRIPTION=(sdu=32000)(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.2)(PORT=1521))(CONNECT_DATA=(SID=orcl)(SERVER=DEDICATED)))", "business", "business");		
 		AsyncEngine engine=AsyncEngine.create();
 		engine.register("shoveIt", createShoveItBackend(db));
@@ -50,8 +50,8 @@ public class D0 {
 
 			db.setBatchSize(4096);
 			
-			CompletionCallback callback=new CompletionCallback() {
-				public void completed(Workload workload, Object ret,Object[] args) {}
+			CompletionCallback<Void> callback=new CompletionCallback<Void>() {
+				public void completed(Workload workload, Void ret,Object[] args) {}
 				public void errored(Workload workload, Throwable e,	Object[] args) {
 					e.printStackTrace();
 					System.exit(1);
@@ -64,7 +64,7 @@ public class D0 {
 				for (int s=0;s<10;++s) {
 					long sec_id=dbid.next("sec_id");
 					
-					engine.callWithCallback("shoveIt",callback,  doc_id, sec_id, ts_sec);
+					engine.<Void>callWithCallback("shoveIt",callback,  doc_id, sec_id, ts_sec);
 				}
 			}
 
@@ -82,9 +82,9 @@ public class D0 {
 		}
 	}
 
-	private static ServiceBackend createShoveItBackend(final DB db) {
-		ServiceBackend backend=new ServiceBackend() {
-			public void process(final List<Request> bulk) throws Exception {
+	private static ServiceBackend<Void> createShoveItBackend(final DB db) {
+		ServiceBackend<Void> backend=new ServiceBackend<Void>() {
+			public void process(final List<Request<Void>> bulk) throws Exception {
 				//String threadName=Thread.currentThread().getName();
 				//System.out.println(threadName+" : "+bulk.size());
 				db.commit(new StatementBlock<Void>() {
@@ -93,7 +93,7 @@ public class D0 {
 						cw.	batchInsert(
 							"insert into d1_uuid (doc_id,sec_id,version_from,uuid,version_to) values (?,?,?,?,4294967295)", 
 							new BatchInputIterator() {
-							Iterator<Request> it=bulk.iterator();
+							Iterator<Request<Void>> it=bulk.iterator();
 							Object[] row;
 							public boolean hasNext() {return it.hasNext();}
 							public void next() {row=it.next().getArgs();}

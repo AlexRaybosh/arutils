@@ -11,6 +11,7 @@ import java.util.Properties;
 import com.google.gson.JsonObject;
 
 import arutils.util.JsonUtils;
+import arutils.util.Legacy;
 import arutils.util.Utils;
 
 public class BootEntryShellEval extends BootEntry {
@@ -36,8 +37,8 @@ public class BootEntryShellEval extends BootEntry {
 				InputStream err=process.getErrorStream();
 			) {
 				out.close();
-				byte[] bytes= in.readAllBytes();
-				errMsg=Utils.trim(new String(err.readAllBytes(), StandardCharsets.UTF_8));
+				byte[] bytes= Legacy.jdk9_readAllBytes(in);
+				errMsg=Utils.trim(new String(Legacy.jdk9_readAllBytes(err), StandardCharsets.UTF_8));
 				if (!Utils.isEmpty(errMsg)) errMsg=": "+errMsg;
 				properties=new Properties();
 				properties.load(new StringReader(new String(bytes, StandardCharsets.UTF_8)));

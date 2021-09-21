@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import arutils.db.DB;
 import arutils.util.JsonUtils;
+import arutils.util.Legacy;
 import arutils.util.Utils;
 
 
@@ -293,8 +294,8 @@ public class BootstrapEnv {
 				InputStream err=process.getErrorStream();
 			) {
 				out.close();
-				in.readAllBytes();
-				String errMsg=Utils.trim(new String(err.readAllBytes(), StandardCharsets.UTF_8));
+				Legacy.jdk9_readAllBytes(in);
+				String errMsg=Utils.trim(new String(Legacy.jdk9_readAllBytes(err), StandardCharsets.UTF_8));
 				if (logErrors && !Utils.isEmpty(errMsg)) logerr(errMsg);
 			} finally {
 				exit=process.waitFor();

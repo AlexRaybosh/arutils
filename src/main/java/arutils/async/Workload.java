@@ -20,10 +20,10 @@ package arutils.async;
 import java.util.concurrent.Future;
 
 public interface Workload {
-	public Result call(String serviceName, Object... args) throws InterruptedException;
-	public void callWithCallback(String serviceName, CompletionCallback callback, Object... args) throws InterruptedException;
-	public Result callNoLimit(String serviceName, Object... args) throws InterruptedException;
-	public void callWithCallbackNoLimit(String serviceName, CompletionCallback callback, Object... args) throws InterruptedException;
+	public <T> Result<T> call(String serviceName, Object... args) throws InterruptedException;
+	public <T> void callWithCallback(String serviceName, CompletionCallback<T> callback, Object... args) throws InterruptedException;
+	public <T> Result<T> callNoLimit(String serviceName, Object... args) throws InterruptedException;
+	public <T> void callWithCallbackNoLimit(String serviceName, CompletionCallback<T> callback, Object... args) throws InterruptedException;
 
 	
 	/**

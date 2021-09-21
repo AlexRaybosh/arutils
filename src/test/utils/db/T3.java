@@ -56,14 +56,14 @@ public class T3 {
 
 
 
-	private static ServiceBackend createShoveItBackend(final DB db) {
-		ServiceBackend backend=new ServiceBackend() {
-			public void process(final List<Request> bulk) throws Exception {
+	private static ServiceBackend<Void> createShoveItBackend(final DB db) {
+		ServiceBackend<Void> backend=new ServiceBackend<Void>() {
+			public void process(final List<Request<Void>> bulk) throws Exception {
 				//String threadName=Thread.currentThread().getName();
 				//System.out.println(threadName+" : "+bulk.size());
 				db.commit(new StatementBlock<Void>() {
 					public Void execute(ConnectionWrap cw) throws SQLException, InterruptedException {
-						cw.batchInsert("insert into workdb.t1 values (?,?,?)", bulk);
+						cw.batchInsertRequests("insert into workdb.t1 values (?,?,?)", bulk);
 						return null;
 					}
 				});

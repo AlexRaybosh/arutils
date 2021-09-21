@@ -18,6 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import arutils.util.JsonUtils;
+import arutils.util.Legacy;
 import arutils.util.Utils;
 
 public class BootEntryFileExec extends BootEntry {
@@ -65,8 +66,8 @@ public class BootEntryFileExec extends BootEntry {
 				InputStream err=process.getErrorStream();
 			) {
 				out.close();
-				byte[] bytes = in.readAllBytes();
-				errMsg=new String(err.readAllBytes(), StandardCharsets.UTF_8);
+				byte[] bytes = Legacy.jdk9_readAllBytes(in);
+				errMsg=new String(Legacy.jdk9_readAllBytes(err), StandardCharsets.UTF_8);
 				errMsg=Utils.trim(errMsg);
 				if (!Utils.isEmpty(errMsg)) errMsg=": "+errMsg;
 				properties=new Properties();
@@ -87,6 +88,7 @@ public class BootEntryFileExec extends BootEntry {
 		if (properties!=null && properties.size()==0 && bootstrapEnv.logErrors) BootstrapEnv.logerr("Empty result from "+conf);
 		return properties!=null && properties.size()>0;
 	}
+
 
 
 

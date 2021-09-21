@@ -19,16 +19,12 @@ package arutils.async;
 
 import java.util.List;
 
-public interface ServiceBackend {
+public abstract class ServiceBackend<T> {
 
-	int getMaxBulkSize();
-
-	void process(List<Request> bulk) throws Exception;
-
-	long getWorkerReleaseTimeout();
-
-	int getMaxWorkers();
-	
-	int getMaxQueuedRequests();
+	public abstract void process(List<Request<T>> bulk) throws Exception;
+	public int getMaxBulkSize() {return 1;}
+	public long getWorkerReleaseTimeout() {return 0;}
+	public int getMaxWorkers() {return 1;}
+	public int getMaxQueuedRequests() {return 1;}
 
 }

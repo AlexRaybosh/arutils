@@ -35,7 +35,7 @@ import arutils.async.ServiceBackend;
 import arutils.async.Workload;
 
 public class AsyncEngineImpl extends AsyncEngine implements Workload {
-	volatile Map<String,ServiceImpl> services=new HashMap<>();
+	volatile Map<String,ServiceImpl<? extends Object>> services=new HashMap<>();
 	Lock bigLock=new ReentrantLock();
 	static AtomicInteger tn=new AtomicInteger();
 	static ExecutorService executorService=Executors.newCachedThreadPool(new ThreadFactory() {
@@ -51,26 +51,26 @@ public class AsyncEngineImpl extends AsyncEngine implements Workload {
 	
 
 	@Override
-	public Result call(String serviceName, Object... args) throws InterruptedException {
-		Service service=getService(serviceName);
+	public <T> Result<T> call(String serviceName, Object... args) throws InterruptedException {
+		Service<T> service=getService(serviceName);
 		return service.call(this, args);
 	}
 
 	@Override
-	public void callWithCallback(String serviceName,CompletionCallback callback, Object... args) throws InterruptedException {
-		Service service=getService(serviceName);
+	public <T> void callWithCallback(String serviceName,CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		Service<T> service=getService(serviceName);
 		service.callWithCallback(this, callback, args);
 	}
 
 	@Override
-	public Result callNoLimit(String serviceName, Object... args) throws InterruptedException {
-		Service service=getService(serviceName);
+	public <T> Result<T> callNoLimit(String serviceName, Object... args) throws InterruptedException {
+		Service<T> service=getService(serviceName);
 		return service.callNoLimit(this, args);
 	}
 
 	@Override
-	public void callWithCallbackNoLimit(String serviceName,CompletionCallback callback, Object... args) throws InterruptedException {
-		Service service=getService(serviceName);
+	public <T> void callWithCallbackNoLimit(String serviceName,CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		Service<T> service=getService(serviceName);
 		service.callWithCallbackNoLimit(this, callback, args);
 	}
 
@@ -86,27 +86,28 @@ public class AsyncEngineImpl extends AsyncEngine implements Workload {
 	/* (non-Javadoc)
 	 * @see engine.AsyncEngine#getService(java.lang.String)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public Service getService(String serviceName) {
-		return services.get(serviceName);
+	public <T> Service<T> getService(String serviceName) {
+		return (Service<T>)services.get(serviceName);
 	}
 
 	/* (non-Javadoc)
 	 * @see engine.AsyncEngine#register(java.lang.String, engine.ServiceBackend)
 	 */
 	@Override
-	public Service register(String serviceName, ServiceBackend backend) {
+	public <T> Service<T> register(String serviceName, ServiceBackend<T> backend) {
 		return register(serviceName, backend, this);
 	}
 	/* (non-Javadoc)
 	 * @see engine.AsyncEngine#register(java.lang.String, engine.ServiceBackend)
 	 */
 	@Override
-	public Service register(String serviceName, ServiceBackend backend, Workload trackingWorkload) {
-		ServiceImpl simpl=new ServiceImpl(this, backend,trackingWorkload);
+	public <T> Service<T> register(String serviceName, ServiceBackend<T> backend, Workload trackingWorkload) {
+		ServiceImpl<T> simpl=new ServiceImpl<T>(this, backend,trackingWorkload);
 		bigLock.lock();
 		try {
-			Map<String,ServiceImpl> newservices=new HashMap<>(services);
+			Map<String,ServiceImpl<? extends Object>> newservices=new HashMap<>(services);
 			newservices.put(serviceName, simpl);
 			services=newservices;
 			return simpl;
@@ -114,15 +115,16 @@ public class AsyncEngineImpl extends AsyncEngine implements Workload {
 			bigLock.unlock();	
 		}
 	}
+	@SuppressWarnings("unchecked")
 	@Override
-	public Service registerIfAbsent(String serviceName, ServiceBackend backend) {
-		ServiceImpl simpl=new ServiceImpl(this, backend, this);
+	public <T> Service<T> registerIfAbsent(String serviceName, ServiceBackend<T> backend) {
+		ServiceImpl<T> simpl=new ServiceImpl<>(this, backend, this);
 		bigLock.lock();
 		try {
-			ServiceImpl si = services.get(serviceName);
+			ServiceImpl<T> si = (ServiceImpl<T>) services.get(serviceName);
 			if (si!=null)
 				return si;
-			Map<String,ServiceImpl> newservices=new HashMap<>(services);
+			Map<String,ServiceImpl<? extends Object>> newservices=new HashMap<>(services);
 			newservices.put(serviceName, simpl);
 			services=newservices;
 			return simpl;

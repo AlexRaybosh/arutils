@@ -127,23 +127,23 @@ public class WorkloadImpl implements Workload {
 	}
 
 	@Override
-	public Result call(String serviceName, Object... args) throws InterruptedException {
-		return engine.getService(serviceName).call(this, args);
+	public <T> Result<T> call(String serviceName, Object... args) throws InterruptedException {
+		return engine.<T>getService(serviceName).call(this, args);
 	}
 
 	@Override
-	public void callWithCallback(String serviceName, CompletionCallback callback, Object... args) throws InterruptedException {
-		engine.getService(serviceName).callWithCallback(this,callback,args);
+	public <T> void callWithCallback(String serviceName, CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		engine.<T>getService(serviceName).callWithCallback(this,callback,args);
 	}
 
 	@Override
-	public Result callNoLimit(String serviceName, Object... args) throws InterruptedException {
-		return engine.getService(serviceName).callNoLimit(this, args);
+	public <T> Result<T> callNoLimit(String serviceName, Object... args) throws InterruptedException {
+		return engine.<T>getService(serviceName).callNoLimit(this, args);
 	}
 
 	@Override
-	public void callWithCallbackNoLimit(String serviceName,CompletionCallback callback, Object... args) throws InterruptedException {
-		engine.getService(serviceName).callWithCallbackNoLimit(this,callback,args);
+	public <T> void callWithCallbackNoLimit(String serviceName,CompletionCallback<T> callback, Object... args) throws InterruptedException {
+		engine.<T>getService(serviceName).callWithCallbackNoLimit(this,callback,args);
 	}
 
 	@Override

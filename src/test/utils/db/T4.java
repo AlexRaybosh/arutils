@@ -46,16 +46,16 @@ public class T4 {
 	}
 
 	private static ServiceBackend createShoveItBackend(final DB db) {
-		ServiceBackend backend=new ServiceBackend() {
+		ServiceBackend backend=new ServiceBackend<Void>() {
 			public int getMaxBulkSize() {return db.getBatchSize();}
 			public long getWorkerReleaseTimeout() {return 30000;}
 			public int getMaxWorkers() {return db.getMaxConnections();}
 			public int getMaxQueuedRequests() {return 100000;}
-			public void process(final List<Request> bulk) throws Exception {
+			public void process(final List<Request<Void>> bulk) throws Exception {
 
 				db.commit(new StatementBlock<Void>() {
 					public Void execute(ConnectionWrap cw) throws SQLException, InterruptedException {
-						cw.batchInsert("insert into workdb.t0 values (?,?)", bulk);
+						cw.batchInsertRequests("insert into workdb.t0 values (?,?)", bulk);
 						return null;
 					}
 				});

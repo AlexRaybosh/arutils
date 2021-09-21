@@ -93,9 +93,9 @@ public abstract class ConnectionWrap {
 			public int getColumnCount() {return row.length;}
 		}); 
 	}
-	public void batchInsert(String sql, final List<Request> bulk) throws SQLException, InterruptedException {
+	public <T> void batchInsertRequests(String sql, final List<Request<T>> bulk) throws SQLException, InterruptedException {
 		batchInsert(sql, new BatchInputIterator() {
-			Iterator<Request> it=bulk.iterator();
+			Iterator<Request<T>> it=bulk.iterator();
 			Object[] row;
 			public boolean hasNext() {return it.hasNext();}
 			public void next() {row=it.next().getArgs();}

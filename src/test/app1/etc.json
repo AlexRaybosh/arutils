@@ -12,9 +12,9 @@
 				"word" : {
 					"maxWordLength" : 700,
 					"concurrency" : 2,
-					"queueSize" : 10000,
+					"queueSize" : 65536,
 					"bulkSize" : 256,
-					"cacheSize" : 2048
+					"cacheSize" : 65536
 				}
 			}
 		}

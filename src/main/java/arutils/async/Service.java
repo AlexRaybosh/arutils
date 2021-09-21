@@ -17,18 +17,18 @@
 
 package arutils.async;
 
-public interface Service {
-	<T> Result<T> call(Workload w, Object... args) throws InterruptedException;
-	<T> Result<T> callNoLimit(Workload w, Object... args) throws InterruptedException;
+public interface Service<T> {
+	Result<T> call(Workload w, Object... args) throws InterruptedException;
+	Result<T> callNoLimit(Workload w, Object... args) throws InterruptedException;
 	
-	<T> void callWithCallback(Workload w, CompletionCallback<T> callback,Object... args) throws InterruptedException;
-	<T> void callWithCallbackNoLimit(Workload w, CompletionCallback<T> callback,Object... args) throws InterruptedException;
+	void callWithCallback(Workload w, CompletionCallback<T> callback,Object... args) throws InterruptedException;
+	void callWithCallbackNoLimit(Workload w, CompletionCallback<T> callback,Object... args) throws InterruptedException;
 	
-	<T> void callWithCallback(CompletionCallback<T> callback,Object... args) throws InterruptedException;
-	<T> void callWithCallbackNoLimit(CompletionCallback<T> callback,Object... args) throws InterruptedException;
+	void callWithCallback(CompletionCallback<T> callback,Object... args) throws InterruptedException;
+	void callWithCallbackNoLimit(CompletionCallback<T> callback,Object... args) throws InterruptedException;
 	Workload getTrackingWorkload();
 
-	<T> boolean tryCallWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException;
-	<T> boolean tryCallWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException;
+	boolean tryCallWithCallback(CompletionCallback<T> callback, Object... args) throws InterruptedException;
+	boolean tryCallWithCallback(Workload w, CompletionCallback<T> callback, Object... args) throws InterruptedException;
 
 }

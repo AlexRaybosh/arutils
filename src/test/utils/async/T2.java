@@ -15,9 +15,9 @@ public class T2 {
 		AsyncEngine engine=AsyncEngine.create();
 		engine.register("MySquare", createMySquareBackend());
 		
-		List<Result> results=new ArrayList<>();
+		List<Result<Integer>> results=new ArrayList<>();
 		for (int i=0;i<100;++i) {
-			Result r=engine.call("MySquare", i);
+			Result<Integer> r=engine.call("MySquare", i);
 			results.add(r);
 		}
 		long soFarSubmitted=engine.last();
@@ -30,14 +30,14 @@ public class T2 {
 
 	}
 
-	private static ServiceBackend createMySquareBackend() {
+	private static ServiceBackend<Integer> createMySquareBackend() {
 
-		ServiceBackend backend=new ServiceBackend() {
+		ServiceBackend<Integer> backend=new ServiceBackend<Integer>() {
 			@Override
-			public void process(List<Request> bulk) throws Exception {
+			public void process(List<Request<Integer>> bulk) throws Exception {
 				String threadName=Thread.currentThread().getName();
 				StringBuilder sb=new StringBuilder(threadName+" : ");
-				for (Request r : bulk) {
+				for (Request<Integer> r : bulk) {
 					Integer num=(Integer)r.getArgs()[0];
 					r.setResult(num*num);
 					sb.append("\tA=").append(num);

@@ -2,8 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="src" path="src/test/app1"/>
-	<classpathentry kind="src" path="src/test/app2"/>
-	<classpathentry kind="src" path="src/test/tests"/>
 	<classpathentry kind="src" path="src/test/utils"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>

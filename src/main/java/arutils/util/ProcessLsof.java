@@ -336,7 +336,7 @@ public class ProcessLsof {
 					InputStream in=process.getInputStream();
 				) {
 					out.close();
-					this.buf=in.readAllBytes();
+					this.buf=Legacy.jdk9_readAllBytes(in);
 					
 					
 					ProcessLsof current=null;
